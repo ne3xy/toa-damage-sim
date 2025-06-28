@@ -238,6 +238,154 @@ class PlayerTest {
         assertTrue(slowPlayer.canAttack(Tick(9)))
     }
 
+    @Test
+    fun `should drink surge potion and restore 25 spec energy`() {
+        val player = createTestPlayer()
+        
+        // Consume some energy first
+        player.specialAttackEnergy.consume(50)
+        assertEquals(50, player.specialAttackEnergy.energy)
+        
+        val result = player.drinkSurgePot(Tick(0))
+        
+        assertTrue(result)
+        assertEquals(75, player.specialAttackEnergy.energy)
+    }
+
+    @Test
+    fun `should not drink surge potion when at full spec`() {
+        val player = createTestPlayer()
+        
+        // Player starts with full spec (100)
+        assertEquals(100, player.specialAttackEnergy.energy)
+        
+        val result = player.drinkSurgePot(Tick(0))
+        
+        assertFalse(result)
+        assertEquals(100, player.specialAttackEnergy.energy) // Should remain unchanged
+    }
+
+    @Test
+    fun `should not drink surge potion when on cooldown`() {
+        val player = createTestPlayer()
+        
+        // Consume some energy first
+        player.specialAttackEnergy.consume(50)
+        assertEquals(50, player.specialAttackEnergy.energy)
+        
+        // Drink first potion
+        val firstResult = player.drinkSurgePot(Tick(0))
+        assertTrue(firstResult)
+        assertEquals(75, player.specialAttackEnergy.energy)
+        
+        // Try to drink again immediately (should fail due to cooldown)
+        val secondResult = player.drinkSurgePot(Tick(1))
+        assertFalse(secondResult)
+        assertEquals(75, player.specialAttackEnergy.energy) // Should remain unchanged
+    }
+
+    @Test
+    fun `should be able to drink surge potion after cooldown expires`() {
+        val player = createTestPlayer()
+        
+        // Consume some energy first
+        player.specialAttackEnergy.consume(50)
+        assertEquals(50, player.specialAttackEnergy.energy)
+        
+        // Drink first potion
+        val firstResult = player.drinkSurgePot(Tick(0))
+        assertTrue(firstResult)
+        assertEquals(75, player.specialAttackEnergy.energy)
+        
+        // Try to drink again after cooldown expires (500 ticks)
+        val secondResult = player.drinkSurgePot(Tick(500))
+        assertTrue(secondResult)
+        assertEquals(100, player.specialAttackEnergy.energy) // Should be capped at 100
+    }
+
+    @Test
+    fun `should not exceed max spec energy when drinking surge potion`() {
+        val player = createTestPlayer()
+        
+        // Set energy to 90 (10 below max)
+        player.specialAttackEnergy.consume(10)
+        assertEquals(90, player.specialAttackEnergy.energy)
+        
+        val result = player.drinkSurgePot(Tick(0))
+        
+        assertTrue(result)
+        assertEquals(100, player.specialAttackEnergy.energy) // Should be capped at 100, not 115
+    }
+
+    @Test
+    fun `should handle multiple surge potion uses with proper cooldowns`() {
+        val player = createTestPlayer()
+        
+        // Consume energy to 25
+        player.specialAttackEnergy.consume(75)
+        assertEquals(25, player.specialAttackEnergy.energy)
+        
+        // First potion
+        val firstResult = player.drinkSurgePot(Tick(0))
+        assertTrue(firstResult)
+        assertEquals(50, player.specialAttackEnergy.energy)
+        
+        // Second potion after cooldown
+        val secondResult = player.drinkSurgePot(Tick(500))
+        assertTrue(secondResult)
+        assertEquals(75, player.specialAttackEnergy.energy)
+        
+        // Third potion after another cooldown
+        val thirdResult = player.drinkSurgePot(Tick(1000))
+        assertTrue(thirdResult)
+        assertEquals(100, player.specialAttackEnergy.energy)
+        
+        // Fourth potion should fail (at full spec)
+        val fourthResult = player.drinkSurgePot(Tick(1500))
+        assertFalse(fourthResult)
+        assertEquals(100, player.specialAttackEnergy.energy)
+    }
+
+    @Test
+    fun `should handle edge case of drinking exactly at cooldown boundary`() {
+        val player = createTestPlayer()
+        
+        // Consume some energy
+        player.specialAttackEnergy.consume(50)
+        assertEquals(50, player.specialAttackEnergy.energy)
+        
+        // Drink first potion
+        val firstResult = player.drinkSurgePot(Tick(0))
+        assertTrue(firstResult)
+        assertEquals(75, player.specialAttackEnergy.energy)
+        
+        // Try to drink at exactly 499 ticks (should fail - still on cooldown)
+        val secondResult = player.drinkSurgePot(Tick(499))
+        assertFalse(secondResult)
+        assertEquals(75, player.specialAttackEnergy.energy)
+        
+        // Try to drink at exactly 500 ticks (should succeed - cooldown expired)
+        val thirdResult = player.drinkSurgePot(Tick(500))
+        assertTrue(thirdResult)
+        assertEquals(100, player.specialAttackEnergy.energy)
+    }
+
+    @Test
+    fun `should not put surge potion on cooldown if attempted at full spec`() {
+        val player = createTestPlayer()
+        // Player starts at full spec
+        assertEquals(100, player.specialAttackEnergy.energy)
+        // Try to drink at tick 0 (should fail)
+        val result = player.drinkSurgePot(Tick(0))
+        assertFalse(result)
+        // Now consume some energy and try to drink at tick 1 (should succeed if not on cooldown)
+        player.specialAttackEnergy.consume(25)
+        assertEquals(75, player.specialAttackEnergy.energy)
+        val result2 = player.drinkSurgePot(Tick(1))
+        assertTrue(result2)
+        assertEquals(100, player.specialAttackEnergy.energy)
+    }
+
     private fun createTestPlayer(): Player {
         val combatEntity = GenericCombatEntity(
             name = "Test Player",

@@ -282,6 +282,46 @@ class AkkhaTest {
         assertFalse(shadow.isAttackable(Tick(16)))
     }
 
+    @Test
+    fun `player should drink surge pot before attacking Akkha if spec is under 50`() {
+        val player = createTestPlayer()
+        player.specialAttackEnergy.consume(60) // Set spec to 40
+        val akkha = Akkha(player)
+        akkha.onTick(Tick(0)) // Should attack Akkha and try to drink surge pot
+        // After onTick, spec should be 65 (40 + 25 from surge pot)
+        assertEquals(65, player.specialAttackEnergy.energy)
+    }
+
+    @Test
+    fun `player should NOT drink surge pot before attacking Akkha if spec is 50 or above`() {
+        val player = createTestPlayer()
+        player.specialAttackEnergy.consume(40) // Set spec to 60
+        val akkha = Akkha(player)
+        akkha.onTick(Tick(0)) // Should attack Akkha but NOT drink surge pot
+        // After onTick, spec should be 60 or less (if spec used for attack), but not increased by surge pot
+        assertEquals(60, player.specialAttackEnergy.energy)
+    }
+
+    @Test
+    fun `player should NOT drink surge pot when attacking shadow, even if spec is under 50`() {
+        val player = createTestPlayer()
+        player.specialAttackEnergy.consume(60) // Set spec to 40
+        val akkha = Akkha(player)
+        // Proc shadow by dealing damage to phase boundary
+        akkha.akkha.takeDamage(1470 / 5) // Deal exactly phase size damage
+        akkha.akkha.maybeProcShadow(Tick(0)) // Proc the shadow
+        // Wait for shadow to be attackable
+        akkha.onTick(Tick(6)) // Shadow becomes attackable at tick 6
+        // Spec should remain 40 (no surge pot drank)
+        assertEquals(40, player.specialAttackEnergy.energy)
+        // Kill the shadow
+        akkha.akkha.shadow!!.takeDamage(255) // Kill shadow
+        // Now attack Akkha again - should drink surge pot since spec is still under 50
+        akkha.onTick(Tick(7)) // Attack Akkha again
+        // Spec should now be 65 (40 + 25 from surge pot)
+        assertEquals(65, player.specialAttackEnergy.energy)
+    }
+
     private fun createTestPlayer(): Player {
         val combatEntity = GenericCombatEntity(
             name = "Test Player",

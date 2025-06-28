@@ -18,6 +18,9 @@ class Akkha(
 
     override fun onTick(tick: Tick) {
         if (akkha.isAttackable(tick)) {
+            if (player.specialAttackEnergy.energy < 50) {
+                player.drinkSurgePot(tick)
+            }
             player.attack(tick, akkha, shouldSpec = { tick.value != 0 && akkha.shouldZcbSpec()})
             akkha.maybeProcShadow(tick)
         }  else if (akkha.shadow?.isAttackable(tick) == true) {
