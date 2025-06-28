@@ -2,8 +2,11 @@ package com.osrs.toa.sims
 
 import com.osrs.toa.Health
 import com.osrs.toa.Tick
+import com.osrs.toa.actors.CombatEntity
 import com.osrs.toa.actors.GenericCombatEntity
 import com.osrs.toa.actors.Player
+import com.osrs.toa.actors.DefaultCombatStats
+import com.osrs.toa.actors.AttackStyle
 import com.osrs.toa.weapons.Weapons
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
@@ -188,6 +191,79 @@ class ZebakTest {
         testBoss.takeDamage(3000)
         assertEquals(0, testBoss.health.value)
         assertFalse(testBoss.isAlive)
+    }
+
+    @Test
+    fun `should not reduce defence below 50`() {
+        val zebak = Zebak(createTestPlayer())
+        
+        val initialDefence = zebak.zebak.combatStats.defenceLevel
+        
+        // Try to reduce defence by a large amount that would go below 50
+        val largeReduction = 100
+        zebak.zebak.combatStats.reduceDefenceLevel(largeReduction)
+        
+        // Defence should be capped at 50, not reduced to initialDefence - 100
+        assertEquals(50, zebak.zebak.combatStats.defenceLevel)
+    }
+
+    @Test
+    fun `should allow defence reduction when above 50`() {
+        val zebak = Zebak(createTestPlayer())
+        
+        val initialDefence = zebak.zebak.combatStats.defenceLevel
+        
+        // If defence is already at 50, we can't test reduction above 50
+        if (initialDefence <= 50) {
+            // Test that defence stays at 50 when trying to reduce it
+            zebak.zebak.combatStats.reduceDefenceLevel(10)
+            assertEquals(50, zebak.zebak.combatStats.defenceLevel)
+        } else {
+            // Test normal reduction when above 50
+            val smallReduction = 5
+            zebak.zebak.combatStats.reduceDefenceLevel(smallReduction)
+            assertEquals(initialDefence - smallReduction, zebak.zebak.combatStats.defenceLevel)
+        }
+    }
+
+    @Test
+    fun `should handle multiple defence reductions correctly`() {
+        val zebak = Zebak(createTestPlayer())
+        
+        assertEquals(70, zebak.zebak.combatStats.defenceLevel) // Verify initial defence level
+        
+        // First reduction: should work normally
+        zebak.zebak.combatStats.reduceDefenceLevel(5)
+        assertEquals(65, zebak.zebak.combatStats.defenceLevel)
+        
+        // Second reduction: should work normally
+        zebak.zebak.combatStats.reduceDefenceLevel(5)
+        assertEquals(55, zebak.zebak.combatStats.defenceLevel)
+        
+        // Third reduction: should cap at 50
+        zebak.zebak.combatStats.reduceDefenceLevel(15)
+        assertEquals(50, zebak.zebak.combatStats.defenceLevel)
+        
+        // Fourth reduction: should stay at 50
+        zebak.zebak.combatStats.reduceDefenceLevel(10)
+        assertEquals(50, zebak.zebak.combatStats.defenceLevel)
+    }
+
+    @Test
+    fun `should handle Bandos Godsword special attack defence reduction`() {
+        val zebak = Zebak(createTestPlayer())
+        val player = createTestPlayer()
+        
+        val initialDefence = zebak.zebak.combatStats.defenceLevel
+        
+        // Simulate multiple BGS special attacks
+        repeat(5) {
+            player.attack(Tick(0), zebak.zebak, shouldSpec = { true })
+        }
+        
+        // Defence should be reduced but not below 50
+        assertTrue(zebak.zebak.combatStats.defenceLevel <= initialDefence)
+        assertTrue(zebak.zebak.combatStats.defenceLevel >= 50)
     }
 
     private fun createTestPlayer(): Player {

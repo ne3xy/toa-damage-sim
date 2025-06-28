@@ -33,6 +33,7 @@ class BaseWeaponTest {
             name = "Test Target",
             health = Health(100),
             combatStats = object : CombatStats {
+                override val defenceLevel: Int = 100
                 override fun getDefenceRoll(attackStyle: AttackStyle): Int {
                     capturedDefenceRoll = expectedDefenceRoll
                     return expectedDefenceRoll
@@ -78,6 +79,7 @@ class BaseWeaponTest {
             name = "Test Target",
             health = Health(100),
             combatStats = object : CombatStats {
+                override val defenceLevel: Int = 100
                 override fun getDefenceRoll(attackStyle: AttackStyle): Int {
                     capturedDefenceRoll = expectedDefenceRoll
                     return expectedDefenceRoll

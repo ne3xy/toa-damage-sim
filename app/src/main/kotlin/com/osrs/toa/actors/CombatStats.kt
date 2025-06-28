@@ -3,6 +3,7 @@ package com.osrs.toa.actors
 import kotlin.math.max
 
 interface CombatStats {
+    val defenceLevel: Int
     fun getDefenceRoll(attackStyle: AttackStyle): Int
     fun reduceDefenceLevel(amount: Int)
 }
@@ -15,6 +16,9 @@ class ToaMonsterCombatStats(
         require(invocationLevel >= 0) { "Invocation level must be non-negative" }
         require(invocationLevel % 5 == 0) { "Invocation level must be divisible by 5" }
     }
+    
+    override val defenceLevel: Int
+        get() = combatStats.defenceLevel
     
     override fun getDefenceRoll(attackStyle: AttackStyle): Int {
         return (combatStats.getDefenceRoll(attackStyle) * (1 + (.02 * invocationLevel / 5))).toInt()
@@ -36,7 +40,7 @@ class DefaultCombatStats(
     private val rangedHeavyDefenceBonus: Int = 0,
     private val magicDefenceBonus: Int = 0
 ) : CombatStats {
-    var defenceLevel: Int = defenceLevel
+    override var defenceLevel: Int = defenceLevel
         private set(value) {
             field = value
         }

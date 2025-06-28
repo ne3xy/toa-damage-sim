@@ -10,6 +10,27 @@ import com.osrs.toa.actors.DefaultCombatStats
 import com.osrs.toa.actors.ToaMonsterCombatStats
 import kotlin.math.max
 
+private class ZebakCombatStats(private val baseCombatStats: CombatStats) : CombatStats by baseCombatStats {
+    override fun reduceDefenceLevel(amount: Int) {
+        // Defense can't be lowered past 50
+        val currentDefence = baseCombatStats.defenceLevel
+        val newDefence = max(50, currentDefence - amount)
+        val actualReduction = currentDefence - newDefence
+        if (actualReduction > 0) {
+            baseCombatStats.reduceDefenceLevel(actualReduction)
+        }
+    }
+}
+
+private val zebakBaseStats = DefaultCombatStats(
+    defenceLevel = 70, // Level 3 Zebak defence level
+    magicLevel = 100, // Level 3 Zebak magic level
+    meleeSlashDefenceBonus = 160,
+    rangedDefenceBonus = 110,
+    magicDefenceBonus = 200
+)
+
+
 class Zebak(
         private val player: Player
 ): BossFight {
@@ -17,7 +38,7 @@ class Zebak(
     val zebak = ZebakBoss(GenericCombatEntity(
             name = "530 Level 3 Zebak",
             health = Health(2130),
-            combatStats = ZebakCombatStats()
+            combatStats = ZebakCombatStats(ToaMonsterCombatStats(zebakBaseStats, invocationLevel = 530))
     ))
 
     override fun onTick(tick: Tick) {
@@ -48,26 +69,5 @@ class ZebakBoss(private val combatEntity: CombatEntity): CombatEntity by combatE
         // Simple logic: spec when health is high enough to make it worthwhile
         // You can adjust this threshold based on your preferences
         return health.value > 500
-    }
-} 
-
-private val zebakBaseCombatStats = ToaMonsterCombatStats(DefaultCombatStats(
-                defenceLevel = 70, // Level 3 Zebak defence level
-                magicLevel = 100, // Level 3 Zebak magic level
-                meleeSlashDefenceBonus = 160,
-                rangedDefenceBonus = 110,
-                magicDefenceBonus = 200
-            ), invocationLevel = 530)
-
-private object ZebakCombatStats: CombatStats by zebakBaseCombatStats {
-    override fun reduceDefenceLevel(amount: Int) {
-        // Defense can't be lowered past 50
-        val currentDefence = zebakBaseCombatStats.defenceLevel
-        val newDefence = max(50, currentDefence - amount)
-        val actualReduction = currentDefence - newDefence
-        
-        if (actualReduction > 0) {
-            zebakBaseCombatStats.reduceDefenceLevel(actualReduction)
-        }
     }
 }
