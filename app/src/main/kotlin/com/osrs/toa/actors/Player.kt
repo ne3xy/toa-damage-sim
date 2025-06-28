@@ -13,13 +13,17 @@ class Player(
     private var lastSurgePotTick: Tick? = null
     private val surgePotCooldown = 500
     
+    private var liquidAdrenalineActive = false
+    private var liquidAdrenalineStartTick: Tick? = null
+    private val liquidAdrenalineDuration = 250
+    
     fun attack(currentTick: Tick, target: CombatEntity, shouldSpec: () -> Boolean = {true}) {
         if (canAttack(currentTick)) {
-            if (shouldSpec() && specialAttackEnergy.canUseSpecial(specWeapon.specialAttackCost)) {
+            if (shouldSpec() && specialAttackEnergy.canUseSpecial(getSpecCost(specWeapon.specialAttackCost, currentTick))) {
                 setLastAttackTick(currentTick, specWeapon.attackSpeed)
                 val damage = specWeapon.spec(target)
                 target.takeDamage(damage)
-                specialAttackEnergy.consume(specWeapon.specialAttackCost)
+                specialAttackEnergy.consume(getSpecCost(specWeapon.specialAttackCost, currentTick))
                 println("dealt $damage damage to ${target.name} with ${specWeapon.name} on tick ${currentTick.value}. it has ${target.health.value} health")
 
             } else {
@@ -50,5 +54,34 @@ class Player(
         specialAttackEnergy.regenerate(25)
         println("Drank surge potion on tick ${currentTick.value}. Special attack energy: ${specialAttackEnergy.energy}")
         return true
+    }
+    
+    fun drinkLiquidAdrenaline(currentTick: Tick): Boolean {
+        // Can only drink once ever (startTick is null if never drunk)
+        if (liquidAdrenalineStartTick != null) {
+            println("Cannot drink liquid adrenaline: already used")
+            return false
+        }
+        
+        // Drink the potion
+        liquidAdrenalineActive = true
+        liquidAdrenalineStartTick = currentTick
+        println("Drank liquid adrenaline on tick ${currentTick.value}. Special attack costs halved for $liquidAdrenalineDuration ticks")
+        return true
+    }
+    
+    private fun getSpecCost(baseCost: Int, currentTick: Tick): Double {
+        if (liquidAdrenalineActive && liquidAdrenalineStartTick != null) {
+            val ticksElapsed = currentTick - liquidAdrenalineStartTick!!
+            if (ticksElapsed.value >= liquidAdrenalineDuration) {
+                // Effect has expired
+                liquidAdrenalineActive = false
+                println("Liquid adrenaline effect expired on tick ${currentTick.value}")
+                return baseCost.toDouble()
+            }
+            // Halve the cost with decimal precision
+            return baseCost / 2.0
+        }
+        return baseCost.toDouble()
     }
 }

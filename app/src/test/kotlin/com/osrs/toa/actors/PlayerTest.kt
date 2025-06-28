@@ -5,6 +5,7 @@ import com.osrs.toa.SpecialAttackEnergy
 import com.osrs.toa.Tick
 import com.osrs.toa.weapons.Weapons
 import com.osrs.toa.weapons.Weapon
+import com.osrs.toa.weapons.SpecWeapon
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
@@ -386,6 +387,53 @@ class PlayerTest {
         assertEquals(100, player.specialAttackEnergy.energy)
     }
 
+    @Test
+    fun `should drink liquid adrenaline once and halve spec costs`() {
+        val player = createTestPlayer()
+        
+        // Drink liquid adrenaline
+        val result = player.drinkLiquidAdrenaline(Tick(0))
+        assertTrue(result)
+        
+        // Attack with spec - should use halved cost (75/2 = 37.5)
+        val target = createMockTarget()
+        player.attack(Tick(1), target, shouldSpec = { true })
+        
+        // Should have consumed 37.5 energy instead of 75
+        // Internal precision: 1000 - 375 = 625, displayed as 62
+        assertEquals(62, player.specialAttackEnergy.energy)
+    }
+
+    @Test
+    fun `should not drink liquid adrenaline twice & should consume full cost after effect expires`() {
+        val player = createTestPlayerWithLowSpecWeapon()
+        
+        // Drink liquid adrenaline first time
+        val firstResult = player.drinkLiquidAdrenaline(Tick(0))
+        assertTrue(firstResult)
+        
+        // Try to drink again immediately
+        val secondResult = player.drinkLiquidAdrenaline(Tick(1))
+        assertFalse(secondResult)
+        
+        // Attack at tick 0 (effect active) - should consume halved cost (50/2 = 25)
+        val target = createMockTarget()
+        player.attack(Tick(0), target, shouldSpec = { true })
+        assertEquals(75, player.specialAttackEnergy.energy) // 100 - 25 = 75
+        
+        // Wait for effect to expire and try to drink again
+        val thirdResult = player.drinkLiquidAdrenaline(Tick(250))
+        assertFalse(thirdResult)
+        
+        // Attack at tick 249 (effect still active) - should consume halved cost
+        player.attack(Tick(245), target, shouldSpec = { true })
+        assertEquals(50, player.specialAttackEnergy.energy) // 50 - 25 = 25
+        
+        // Attack at tick 250 (effect expired) - should consume full cost
+        player.attack(Tick(250), target, shouldSpec = { true })
+        assertEquals(0, player.specialAttackEnergy.energy) // 25 - 50 = 0 (capped at 0)
+    }
+
     private fun createTestPlayer(): Player {
         val combatEntity = GenericCombatEntity(
             name = "Test Player",
@@ -425,6 +473,28 @@ class PlayerTest {
         override val attackSpeed = 9
         override fun attack(target: CombatEntity): Int {
             return 20 // Fixed damage for testing
+        }
+    }
+
+    private fun createTestPlayerWithLowSpecWeapon(): Player {
+        val combatEntity = GenericCombatEntity(
+            name = "Test Player",
+            health = Health(99),
+            hasLightbearer = false
+        )
+        return Player(combatEntity, Weapons.MagussShadow, lowSpecWeapon)
+    }
+
+    // Test weapon with 50 spec cost
+    private val lowSpecWeapon = object : SpecWeapon {
+        override val name = "Low Spec Weapon"
+        override val attackSpeed = 5
+        override val specialAttackCost = 50
+        override fun attack(target: CombatEntity): Int {
+            return 20 // Fixed damage for testing
+        }
+        override fun spec(target: CombatEntity): Int {
+            return 30 // Fixed damage for testing
         }
     }
 }
