@@ -45,7 +45,6 @@ class Player(
         // Cannot drink if still on cooldown
         if (lastSurgePotTick != null && currentTick < lastSurgePotTick!! + Tick(surgePotCooldown)) {
             val remainingCooldown = (lastSurgePotTick!! + Tick(surgePotCooldown) - currentTick).value
-            println("Cannot drink surge potion: on cooldown for $remainingCooldown more ticks")
             return false
         }
         
@@ -59,7 +58,6 @@ class Player(
     fun drinkLiquidAdrenaline(currentTick: Tick): Boolean {
         // Can only drink once ever (startTick is null if never drunk)
         if (liquidAdrenalineStartTick != null) {
-            println("Cannot drink liquid adrenaline: already used")
             return false
         }
         

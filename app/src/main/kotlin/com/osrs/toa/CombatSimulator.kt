@@ -10,6 +10,7 @@ class CombatSimulator(private val player: Player, private val boss: BossFight) {
     
     fun simulateTick() {
         handleSpecialAttackEnergy(player)
+        //  TODO: Add thralls
         boss.onTick(currentTick)
         currentTick += Tick(1)
     }
@@ -26,11 +27,8 @@ class CombatSimulator(private val player: Player, private val boss: BossFight) {
         
         val regenerationInterval = if (entity.hasLightbearer) 25 else 50
         val ticksSinceRegenStart = currentTick.value - entity.specRegenStartTick!!.value
-        
-        println("Debug: currentTick=${currentTick.value}, specRegenStartTick=${entity.specRegenStartTick!!.value}, ticksSinceRegenStart=$ticksSinceRegenStart, regenerationInterval=$regenerationInterval, energy=${entity.specialAttackEnergy.energy}")
-        
+
         if (ticksSinceRegenStart > 0 && ticksSinceRegenStart % regenerationInterval == 0) {
-            println("Debug: Regenerating special attack energy!")
             entity.regenerateSpecialAttack()
         }
     }

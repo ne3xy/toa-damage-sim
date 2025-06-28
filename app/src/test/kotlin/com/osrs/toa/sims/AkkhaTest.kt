@@ -30,9 +30,6 @@ class AkkhaTest {
 
     @Test
     fun `should be attackable when no shadow is alive`() {
-        val player = createTestPlayer()
-        val akkha = Akkha(player)
-        
         // Create a test boss instance to test attackability
         val testBoss = createTestAkkhaBoss()
         

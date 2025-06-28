@@ -15,9 +15,9 @@ fun main() {
                 GenericCombatEntity(
                         health = Health(99),
                         name = "Player",
-                        hasLightbearer = false
+                        hasLightbearer = true
                 ),
-                Weapons.MagussShadow,
+                Weapons.TumekensShadow,
                 Weapons.ZaryteCrossbow
         )
         val monster = Akkha(player)

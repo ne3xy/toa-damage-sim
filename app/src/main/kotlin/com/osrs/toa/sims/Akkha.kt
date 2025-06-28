@@ -21,6 +21,12 @@ class Akkha(
             if (player.specialAttackEnergy.energy < 50) {
                 player.drinkSurgePot(tick)
             }
+            
+            // Drink liquid adrenaline before first ZCB spec
+            if (tick.value != 0 && akkha.shouldZcbSpec()) {
+                player.drinkLiquidAdrenaline(tick)
+            }
+            
             player.attack(tick, akkha, shouldSpec = { tick.value != 0 && akkha.shouldZcbSpec()})
             akkha.maybeProcShadow(tick)
         }  else if (akkha.shadow?.isAttackable(tick) == true) {

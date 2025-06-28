@@ -38,7 +38,9 @@ class SpecialAttackEnergy(
     }
 
     fun isRegenerating(): Boolean {
-        return energy < 100
+        val regenerating = energy < 100
+        if (!regenerating) println("Spec energy capped")
+        return regenerating
     }
     
     fun canUseSpecial(cost: Int): Boolean {
