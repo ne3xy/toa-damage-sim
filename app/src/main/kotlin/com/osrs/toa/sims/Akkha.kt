@@ -1,0 +1,100 @@
+package com.osrs.toa.sims
+
+import com.osrs.toa.Health
+import com.osrs.toa.Tick
+import com.osrs.toa.actors.CombatEntity
+import com.osrs.toa.actors.GenericCombatEntity
+import com.osrs.toa.actors.Player
+import kotlin.math.min
+
+class Akkha(
+        private val player: Player
+): BossFight {
+    //hardcode 530 level3
+    val akkha = AkkhaBoss(GenericCombatEntity(
+            name = "530 Level 3 Akkha",
+            health = Health(1470),
+    ))
+
+    override fun onTick(tick: Tick) {
+        if (akkha.isAttackable(tick)) {
+            player.attack(tick, akkha, shouldSpec = { tick.value != 0 && akkha.shouldZcbSpec()})
+            akkha.maybeProcShadow(tick)
+        }  else if (akkha.shadow?.isAttackable(tick) == true) {
+            player.attack(tick, akkha.shadow!!, shouldSpec = {false})
+            if (!akkha.shadow!!.isAlive) {
+                player.specialAttackEnergy.regenerate(15)
+            }
+        }
+    }
+
+    override fun isFightOver() = !akkha.isAlive
+}
+
+class AkkhaBoss(private val combatEntity: CombatEntity): CombatEntity by combatEntity {
+    private val maxHealth = combatEntity.health.value
+    private val phaseSize = maxHealth / 5
+    private val pathLevel = 3
+    private var lastMemoryEnded = Tick(0)
+    private lateinit var thisMemoryEnds: Tick
+
+    var shadow: AkkhaShadow? = null
+        private set
+
+    private val maxDamageToCap: Int
+        get() = if (hpIsTopOfThePhase()) phaseSize else health.value % phaseSize
+
+    fun isAttackable(tick: Tick): Boolean {
+        return shadow?.isAlive != true && !isInMemory(tick)
+    }
+
+    private fun isInMemory(tick: Tick): Boolean {
+        val numberOfMemories = 4 + (pathLevel / 2)
+        val nextMemory = lastMemoryEnded + Tick(101)
+        thisMemoryEnds = nextMemory + Tick(numberOfMemories * 4)
+        val inMemory = tick > nextMemory && tick < nextMemory + Tick((numberOfMemories * 4) + 1)
+        if (inMemory) println("in memory on tick $tick")
+        if (thisMemoryEnds < tick) {
+            lastMemoryEnded = thisMemoryEnds
+        }
+        return inMemory
+    }
+
+    override fun takeDamage(damage: Int): CombatEntity {
+
+        return combatEntity.takeDamage(min(maxDamageToCap, damage))
+    }
+
+    private fun hpIsTopOfThePhase() = (shadow?.bossHpProccedAt ?: maxHealth) == health.value
+
+    fun maybeProcShadow(tick: Tick) {
+        if (isAlive && health.value % phaseSize == 0 && !hpIsTopOfThePhase()) {
+            shadow = AkkhaShadow(
+                    GenericCombatEntity(
+                            name = "530 Level 3 Akkha's Shadow",
+                            health = Health(255)
+                    ),
+                    attackableOn = Tick(tick.value + 6),
+                    bossHpProccedAt = health.value
+            )
+        }
+    }
+
+    fun shouldZcbSpec(): Boolean {
+        if (health.value >= 500) {
+            // maybe fine tune this idk about wasted death charge, overcapping spec during shadows or memories
+            if (maxDamageToCap > 110) return true
+        } else {
+            // kindof arbitrary cutoff, fang specs give 7 damage in enrage so say need 21 more damage than shadow expected hit to zcb spec
+            // at 320 hp expected hit is 57, expected shadow hit is 35.4 (6way range, no magus, 530 akkha) 🤷‍♀️
+            return health.value > 320
+        }
+        return false
+    }
+}
+
+class AkkhaShadow(combatEntity: CombatEntity, private val attackableOn: Tick, val bossHpProccedAt: Number): CombatEntity by combatEntity {
+    fun isAttackable(tick: Tick): Boolean {
+        return tick >= attackableOn && isAlive
+    }
+}
