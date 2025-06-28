@@ -25,7 +25,7 @@ class GenericCombatEntity(
         override val specialAttackEnergy: SpecialAttackEnergy = SpecialAttackEnergy(),
         override val hasLightbearer: Boolean = false,
         override var specRegenStartTick: Tick? = null,
-        override val combatStats: CombatStats = CombatStats(defenceLevel = 1)
+        override val combatStats: CombatStats = DefaultCombatStats(defenceLevel = 1)
 ) : CombatEntity {
     private var lastAttackTick = Tick(0)
         get() = field

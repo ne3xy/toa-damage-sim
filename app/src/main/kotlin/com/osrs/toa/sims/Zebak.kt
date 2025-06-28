@@ -6,6 +6,7 @@ import com.osrs.toa.actors.CombatEntity
 import com.osrs.toa.actors.GenericCombatEntity
 import com.osrs.toa.actors.Player
 import com.osrs.toa.actors.CombatStats
+import com.osrs.toa.actors.DefaultCombatStats
 
 class Zebak(
         private val player: Player
@@ -14,7 +15,7 @@ class Zebak(
     val zebak = ZebakBoss(GenericCombatEntity(
             name = "530 Level 3 Zebak",
             health = Health(2130),
-            combatStats = CombatStats(
+            combatStats = DefaultCombatStats(
                 defenceLevel = 200, // Level 3 Zebak defence level
                 meleeStabDefenceBonus = 100,
                 rangedDefenceBonus = 100,

@@ -6,6 +6,7 @@ import com.osrs.toa.actors.CombatEntity
 import com.osrs.toa.actors.GenericCombatEntity
 import com.osrs.toa.actors.Player
 import com.osrs.toa.actors.CombatStats
+import com.osrs.toa.actors.DefaultCombatStats
 import kotlin.math.min
 
 class Akkha(
@@ -15,7 +16,7 @@ class Akkha(
     val akkha = AkkhaBoss(GenericCombatEntity(
             name = "530 Level 3 Akkha",
             health = Health(1470),
-            combatStats = CombatStats(
+            combatStats = DefaultCombatStats(
                 defenceLevel = 200, // Level 3 Akkha defence level
                 meleeStabDefenceBonus = 100,
                 rangedDefenceBonus = 100,
@@ -93,7 +94,7 @@ class AkkhaBoss(private val combatEntity: CombatEntity): CombatEntity by combatE
                     GenericCombatEntity(
                             name = "530 Level 3 Akkha's Shadow",
                             health = Health(255),
-                            combatStats = CombatStats(
+                            combatStats = DefaultCombatStats(
                                 defenceLevel = 100, // Shadow defence level
                                 meleeStabDefenceBonus = 50,
                                 rangedDefenceBonus = 50,

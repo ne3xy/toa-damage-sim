@@ -3,6 +3,7 @@ package com.osrs.toa.weapons
 import com.osrs.toa.actors.AttackStyle
 import com.osrs.toa.actors.CombatEntity
 import com.osrs.toa.actors.CombatStats
+import com.osrs.toa.actors.DefaultCombatStats
 import com.osrs.toa.actors.GenericCombatEntity
 import com.osrs.toa.Health
 import org.junit.jupiter.api.Test
@@ -216,7 +217,7 @@ class NormalDamageBaseWeaponTest {
         return GenericCombatEntity(
             name = "Test Target",
             health = Health(100),
-            combatStats = CombatStats(
+            combatStats = DefaultCombatStats(
                 defenceLevel = defenceLevel,
                 meleeStabDefenceBonus = meleeStabDefenceBonus,
                 rangedDefenceBonus = rangedDefenceBonus,

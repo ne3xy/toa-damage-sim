@@ -1,16 +1,21 @@
 package com.osrs.toa.actors
 
-data class CombatStats(
-    val defenceLevel: Int,
-    val meleeStabDefenceBonus: Int = 0,
-    val meleeSlashDefenceBonus: Int = 0,
-    val meleeCrushDefenceBonus: Int = 0,
-    val rangedDefenceBonus: Int = 0,
-    val rangedLightDefenceBonus: Int = 0,
-    val rangedHeavyDefenceBonus: Int = 0,
-    val magicDefenceBonus: Int = 0
-) {
-    fun getDefenceRoll(attackStyle: AttackStyle): Int {
+interface CombatStats {
+    val defenceLevel: Int
+    fun getDefenceRoll(attackStyle: AttackStyle): Int
+}
+
+data class DefaultCombatStats(
+    override val defenceLevel: Int,
+    private val meleeStabDefenceBonus: Int = 0,
+    private val meleeSlashDefenceBonus: Int = 0,
+    private val meleeCrushDefenceBonus: Int = 0,
+    private val rangedDefenceBonus: Int = 0,
+    private val rangedLightDefenceBonus: Int = 0,
+    private val rangedHeavyDefenceBonus: Int = 0,
+    private val magicDefenceBonus: Int = 0
+) : CombatStats {
+    override fun getDefenceRoll(attackStyle: AttackStyle): Int {
         val styleDefenceBonus = when (attackStyle) {
             AttackStyle.MELEE_STAB -> meleeStabDefenceBonus
             AttackStyle.MELEE_SLASH -> meleeSlashDefenceBonus
