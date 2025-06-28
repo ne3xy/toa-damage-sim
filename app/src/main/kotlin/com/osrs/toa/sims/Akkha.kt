@@ -7,6 +7,7 @@ import com.osrs.toa.actors.GenericCombatEntity
 import com.osrs.toa.actors.Player
 import com.osrs.toa.actors.CombatStats
 import com.osrs.toa.actors.DefaultCombatStats
+import com.osrs.toa.actors.ToaMonsterCombatStats
 import kotlin.math.min
 
 class Akkha(
@@ -16,13 +17,12 @@ class Akkha(
     val akkha = AkkhaBoss(GenericCombatEntity(
             name = "530 Level 3 Akkha",
             health = Health(1470),
-            combatStats = DefaultCombatStats(
-                defenceLevel = 200, // Level 3 Akkha defence level
-                magicLevel = 200, // Level 3 Akkha magic level
-                meleeStabDefenceBonus = 100,
-                rangedDefenceBonus = 100,
-                magicDefenceBonus = 100
-            )
+            combatStats = ToaMonsterCombatStats(DefaultCombatStats(
+                defenceLevel = 80, // Level 3 Akkha defence level
+                magicLevel = 100, // Level 3 Akkha magic level
+                rangedDefenceBonus = 60,
+                magicDefenceBonus = 10
+            ), invocationLevel = 530)
     ))
 
     override fun onTick(tick: Tick) {
@@ -95,13 +95,12 @@ class AkkhaBoss(private val combatEntity: CombatEntity): CombatEntity by combatE
                     GenericCombatEntity(
                             name = "530 Level 3 Akkha's Shadow",
                             health = Health(255),
-                            combatStats = DefaultCombatStats(
-                                defenceLevel = 100, // Shadow defence level
+                            combatStats = ToaMonsterCombatStats(DefaultCombatStats(
+                                defenceLevel = 30, // Shadow defence level
                                 magicLevel = 100, // Shadow magic level
-                                meleeStabDefenceBonus = 50,
-                                rangedDefenceBonus = 50,
-                                magicDefenceBonus = 50
-                            )
+                                rangedDefenceBonus = 60,
+                                magicDefenceBonus = 10
+                            ), invocationLevel = 530)
                     ),
                     attackableOn = Tick(tick.value + 6),
                     bossHpProccedAt = health.value

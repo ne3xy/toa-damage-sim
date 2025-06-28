@@ -110,7 +110,7 @@ class NormalDamageBaseWeaponTest {
         rangedLightDefenceBonus: Int = 50,
         magicDefenceBonus: Int = 50
     ): CombatEntity {
-        return GenericCombatEntity(`
+        return GenericCombatEntity(
             name = "Test Target",
             health = Health(100),
             combatStats = DefaultCombatStats(

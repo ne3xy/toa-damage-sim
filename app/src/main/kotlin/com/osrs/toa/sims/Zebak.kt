@@ -7,6 +7,8 @@ import com.osrs.toa.actors.GenericCombatEntity
 import com.osrs.toa.actors.Player
 import com.osrs.toa.actors.CombatStats
 import com.osrs.toa.actors.DefaultCombatStats
+import com.osrs.toa.actors.ToaMonsterCombatStats
+import kotlin.math.max
 
 class Zebak(
         private val player: Player
@@ -15,13 +17,7 @@ class Zebak(
     val zebak = ZebakBoss(GenericCombatEntity(
             name = "530 Level 3 Zebak",
             health = Health(2130),
-            combatStats = DefaultCombatStats(
-                defenceLevel = 200, // Level 3 Zebak defence level
-                magicLevel = 200, // Level 3 Zebak magic level
-                meleeStabDefenceBonus = 100,
-                rangedDefenceBonus = 100,
-                magicDefenceBonus = 100
-            )
+            combatStats = ZebakCombatStats()
     ))
 
     override fun onTick(tick: Tick) {
@@ -54,3 +50,24 @@ class ZebakBoss(private val combatEntity: CombatEntity): CombatEntity by combatE
         return health.value > 500
     }
 } 
+
+private val zebakBaseCombatStats = ToaMonsterCombatStats(DefaultCombatStats(
+                defenceLevel = 70, // Level 3 Zebak defence level
+                magicLevel = 100, // Level 3 Zebak magic level
+                meleeSlashDefenceBonus = 160,
+                rangedDefenceBonus = 110,
+                magicDefenceBonus = 200
+            ), invocationLevel = 530)
+
+private object ZebakCombatStats: CombatStats by zebakBaseCombatStats {
+    override fun reduceDefenceLevel(amount: Int) {
+        // Defense can't be lowered past 50
+        val currentDefence = zebakBaseCombatStats.defenceLevel
+        val newDefence = max(50, currentDefence - amount)
+        val actualReduction = currentDefence - newDefence
+        
+        if (actualReduction > 0) {
+            zebakBaseCombatStats.reduceDefenceLevel(actualReduction)
+        }
+    }
+}

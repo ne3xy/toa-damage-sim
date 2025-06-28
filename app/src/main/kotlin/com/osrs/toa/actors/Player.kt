@@ -21,7 +21,7 @@ class Player(
         if (canAttack(currentTick)) {
             if (shouldSpec() && specialAttackEnergy.canUseSpecial(getSpecCost(specWeapon.specialAttackCost, currentTick))) {
                 setLastAttackTick(currentTick, specWeapon.attackSpeed)
-                val damage = specWeapon.spec(target)
+                val damage = specWeapon.attack(target)
                 target.takeDamage(damage)
                 specialAttackEnergy.consume(getSpecCost(specWeapon.specialAttackCost, currentTick))
                 println("dealt $damage damage to ${target.name} with ${specWeapon.name} on tick ${currentTick.value}. it has ${target.health.value} health")

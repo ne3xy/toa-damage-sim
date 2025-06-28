@@ -510,9 +510,6 @@ class PlayerTest {
         override val attackSpeed = 5
         override val specialAttackCost = 50
         override fun attack(target: CombatEntity): Int {
-            return 20 // Fixed damage for testing
-        }
-        override fun spec(target: CombatEntity): Int {
             return 30 // Fixed damage for testing
         }
     }

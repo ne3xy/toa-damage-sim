@@ -37,6 +37,7 @@ class BaseWeaponTest {
                     capturedDefenceRoll = expectedDefenceRoll
                     return expectedDefenceRoll
                 }
+                override fun reduceDefenceLevel(amount: Int) { /* no-op for test */ }
             }
         )
         
@@ -81,6 +82,7 @@ class BaseWeaponTest {
                     capturedDefenceRoll = expectedDefenceRoll
                     return expectedDefenceRoll
                 }
+                override fun reduceDefenceLevel(amount: Int) { /* no-op for test */ }
             }
         )
         
