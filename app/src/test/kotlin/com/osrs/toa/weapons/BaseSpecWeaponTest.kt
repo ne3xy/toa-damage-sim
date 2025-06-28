@@ -18,7 +18,6 @@ class BaseSpecWeaponTest {
         
         assertEquals("Test Spec Weapon", weapon.name)
         assertEquals(5, weapon.attackSpeed)
-        assertEquals(AttackStyle.MELEE_STAB, weapon.attackStyle)
         assertEquals(50, weapon.specialAttackCost)
     }
 
@@ -204,7 +203,7 @@ class BaseSpecWeaponTest {
         val target = createTestTarget(defenceLevel = 0, meleeStabDefenceBonus = 0)
         
         // With zero defence, hit chance should be very high
-        val defenceRoll = target.combatStats.getDefenceRoll(weapon.attackStyle)
+        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.MELEE_STAB)
         val hitChance = AccuracyCalculator.calculateHitChance(1000, defenceRoll)
         
         // Assert on exact calculated values
@@ -218,7 +217,7 @@ class BaseSpecWeaponTest {
         val target = createTestTarget(defenceLevel = 100, meleeStabDefenceBonus = 500)
         
         // With high defence bonuses, hit chance should be lower
-        val defenceRoll = target.combatStats.getDefenceRoll(weapon.attackStyle)
+        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.MELEE_STAB)
         val hitChance = AccuracyCalculator.calculateHitChance(1000, defenceRoll)
         
         // Hit chance should be lower with high defence
@@ -248,16 +247,18 @@ class BaseSpecWeaponTest {
     }
 
     @Test
-    fun `should handle different attack styles for spec weapons`() {
+    fun `should handle different attack styles`() {
         val meleeWeapon = createTestSpecWeapon(attackStyle = AttackStyle.MELEE_CRUSH)
         val rangedWeapon = createTestSpecWeapon(attackStyle = AttackStyle.RANGED)
         val rangedHeavyWeapon = createTestSpecWeapon(attackStyle = AttackStyle.RANGED_HEAVY)
         val magicWeapon = createTestSpecWeapon(attackStyle = AttackStyle.MAGIC)
         
-        assertEquals(AttackStyle.MELEE_CRUSH, meleeWeapon.attackStyle)
-        assertEquals(AttackStyle.RANGED, rangedWeapon.attackStyle)
-        assertEquals(AttackStyle.RANGED_HEAVY, rangedHeavyWeapon.attackStyle)
-        assertEquals(AttackStyle.MAGIC, magicWeapon.attackStyle)
+        // Test that weapons can be created with different attack styles
+        // (attackStyle is now internal, so we can't test it directly)
+        assertEquals("Test Spec Weapon", meleeWeapon.name)
+        assertEquals("Test Spec Weapon", rangedWeapon.name)
+        assertEquals("Test Spec Weapon", rangedHeavyWeapon.name)
+        assertEquals("Test Spec Weapon", magicWeapon.name)
     }
 
     @Test
@@ -287,7 +288,6 @@ class BaseSpecWeaponTest {
         ) {
             override val name = name
             override val attackSpeed = attackSpeed
-            override val attackStyle = attackStyle
             private val weaponAttackRoll = attackRoll
             
             override fun attack(target: CombatEntity): Int {

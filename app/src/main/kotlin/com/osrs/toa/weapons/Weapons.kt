@@ -11,7 +11,6 @@ object Weapons {
     val TumekensShadow: Weapon = object: Weapon {
         override val name = "Tumeken's Shadow"
         override val attackSpeed = 5
-        override val attackStyle = AttackStyle.MAGIC
         override fun attack(target: CombatEntity): Int {
             val hitChance = .8858
             val maxHit = 80
@@ -24,7 +23,6 @@ object Weapons {
     val MagussShadow: Weapon = object: Weapon {
         override val name = "Tumeken's Shadow"
         override val attackSpeed = 5
-        override val attackStyle = AttackStyle.MAGIC
         override fun attack(target: CombatEntity): Int {
             val hitChance = .8953
             val maxHit = 84
@@ -38,7 +36,6 @@ object Weapons {
         override val specialAttackCost = 75
         override val name = "Zaryte Crossbow"
         override val attackSpeed = 5
-        override val attackStyle = AttackStyle.RANGED
         override fun spec(target: CombatEntity): Int {
             val accuracy = .7864
             val damage = min(110, (target.health.value * .22).toInt())
@@ -54,7 +51,6 @@ object Weapons {
         override val specialAttackCost = 50
         override val name = "Bandos Godsword"
         override val attackSpeed = 6
-        override val attackStyle = AttackStyle.MELEE_STAB
         override fun spec(target: CombatEntity): Int {
             val accuracy = .75
             val maxHit = 65

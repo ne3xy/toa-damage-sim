@@ -9,7 +9,6 @@ import kotlin.math.max
 interface Weapon {
     val name: String
     val attackSpeed: Int
-    val attackStyle: AttackStyle
     fun attack(target: CombatEntity): Int
 }
 
@@ -44,7 +43,7 @@ class NormalDamageBaseWeapon(
 class BaseWeapon(
     override val name: String,
     override val attackSpeed: Int,
-    override val attackStyle: AttackStyle,
+    private val attackStyle: AttackStyle,
     private val attackRoll: Int,
     val hitDamage: (CombatEntity) -> Int
 ) : Weapon {
