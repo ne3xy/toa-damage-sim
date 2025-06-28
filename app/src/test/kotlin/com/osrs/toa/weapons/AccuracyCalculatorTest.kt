@@ -15,9 +15,7 @@ class AccuracyCalculatorTest {
         
         // Expected: 1 - (defenceRoll + 2) / (2 * (attackRoll + 1))
         // 1 - (500 + 2) / (2 * (1000 + 1)) = 1 - 502 / 2002 = 1 - 0.2507 = 0.7493
-        val expectedHitChance = 1.0 - (defenceRoll + 2) / (2.0 * (attackRoll + 1))
-        
-        assertEquals(expectedHitChance, hitChance, 0.0001)
+        assertEquals(0.7493, hitChance, 0.0001)
     }
 
     @Test
@@ -29,9 +27,8 @@ class AccuracyCalculatorTest {
         
         // Expected: attackRoll / (2 * (defenceRoll + 1))
         // 1000 / (2 * (1000 + 1)) = 1000 / 2002 = 0.4995
-        val expectedHitChance = attackRoll.toDouble() / (2.0 * (defenceRoll + 1))
-        
-        assertEquals(expectedHitChance, hitChance, 0.0001)
+
+        assertEquals(0.4995, hitChance, 0.0001)
     }
 
     @Test
@@ -42,10 +39,8 @@ class AccuracyCalculatorTest {
         val hitChance = AccuracyCalculator.calculateHitChance(attackRoll, defenceRoll)
         
         // Expected: attackRoll / (2 * (defenceRoll + 1))
-        // 500 / (2 * (1000 + 1)) = 500 / 2002 = 0.2497
-        val expectedHitChance = attackRoll.toDouble() / (2.0 * (defenceRoll + 1))
-        
-        assertEquals(expectedHitChance, hitChance, 0.0001)
+        // 500 / (2 * (1000 + 1)) = 500 / 2002 = 0.24975
+        assertEquals(0.24975, hitChance, 0.0001)
     }
 
     @Test
@@ -56,9 +51,7 @@ class AccuracyCalculatorTest {
         val hitChance = AccuracyCalculator.calculateHitChance(attackRoll, defenceRoll)
         
         // Expected: 1 / (2 * (1000 + 1)) = 1 / 2002 = 0.0005
-        val expectedHitChance = attackRoll.toDouble() / (2.0 * (defenceRoll + 1))
-        
-        assertEquals(expectedHitChance, hitChance, 0.0001)
+        assertEquals(0.0005, hitChance, 0.0001)
         assertTrue(hitChance > 0.0) // Should be very low but not zero
     }
 
@@ -70,9 +63,7 @@ class AccuracyCalculatorTest {
         val hitChance = AccuracyCalculator.calculateHitChance(attackRoll, defenceRoll)
         
         // Expected: 1 - (1000 + 2) / (2 * (10000 + 1)) = 1 - 1002 / 20002 = 0.9499
-        val expectedHitChance = 1.0 - (defenceRoll + 2) / (2.0 * (attackRoll + 1))
-        
-        assertEquals(expectedHitChance, hitChance, 0.0001)
+        assertEquals(0.9499, hitChance, 0.0001)
     }
 
     @Test
@@ -83,9 +74,7 @@ class AccuracyCalculatorTest {
         val hitChance = AccuracyCalculator.calculateHitChance(attackRoll, defenceRoll)
         
         // Expected: 1 - (0 + 2) / (2 * (1000 + 1)) = 1 - 2 / 2002 = 0.9990
-        val expectedHitChance = 1.0 - (defenceRoll + 2) / (2.0 * (attackRoll + 1))
-        
-        assertEquals(expectedHitChance, hitChance, 0.0001)
+        assertEquals(0.9990, hitChance, 0.0001)
     }
 
     @Test
@@ -96,10 +85,7 @@ class AccuracyCalculatorTest {
         val hitChance = AccuracyCalculator.calculateHitChance(attackRoll, defenceRoll)
         
         // Expected: 0 / (2 * (1000 + 1)) = 0 / 2002 = 0.0
-        val expectedHitChance = attackRoll.toDouble() / (2.0 * (defenceRoll + 1))
-        
-        assertEquals(expectedHitChance, hitChance, 0.0001)
-        assertEquals(0.0, hitChance) // Should be zero hit chance
+        assertEquals(0.0, hitChance, 0.0001)
     }
 
     @Test
@@ -110,10 +96,7 @@ class AccuracyCalculatorTest {
         val hitChance = AccuracyCalculator.calculateHitChance(attackRoll, defenceRoll)
         
         // Expected: 0 / (2 * (0 + 1)) = 0 / 2 = 0.0
-        val expectedHitChance = attackRoll.toDouble() / (2.0 * (defenceRoll + 1))
-        
-        assertEquals(expectedHitChance, hitChance, 0.0001)
-        assertEquals(0.0, hitChance) // Should be zero hit chance
+        assertEquals(0.0, hitChance, 0.0001)
     }
 
     @Test

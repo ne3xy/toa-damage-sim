@@ -156,8 +156,9 @@ class BaseWeaponTest {
             }
         )
         
+        // Test the hitDamage function directly to avoid randomness
         val target = createTestTarget(defenceLevel = 1, meleeStabDefenceBonus = 0)
-        val damage = weapon.attack(target)
+        val damage = weapon.hitDamage(target)
         
         assertTrue(customDamageCalled)
         assertEquals(42, damage)

@@ -1,12 +1,11 @@
 package com.osrs.toa.actors
 
 interface CombatStats {
-    val defenceLevel: Int
     fun getDefenceRoll(attackStyle: AttackStyle): Int
 }
 
 data class DefaultCombatStats(
-    override val defenceLevel: Int,
+    private val defenceLevel: Int,
     private val meleeStabDefenceBonus: Int = 0,
     private val meleeSlashDefenceBonus: Int = 0,
     private val meleeCrushDefenceBonus: Int = 0,
