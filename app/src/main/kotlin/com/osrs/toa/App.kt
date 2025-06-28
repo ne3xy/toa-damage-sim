@@ -8,13 +8,6 @@ import com.osrs.toa.actors.Player
 import com.osrs.toa.sims.Akkha
 import com.osrs.toa.weapons.Weapons
 
-// Core tick-based system
-data class Tick(val value: Int) {
-    operator fun plus(other: Tick): Tick = Tick(value + other.value)
-    operator fun minus(other: Tick): Tick = Tick(value - other.value)
-    operator fun compareTo(other: Tick): Int = value.compareTo(other.value)
-}
-
 fun main() {
     var totalLength = 0;
     for (i in 1..1000) {

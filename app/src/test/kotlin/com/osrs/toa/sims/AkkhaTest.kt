@@ -7,7 +7,6 @@ import com.osrs.toa.actors.Player
 import com.osrs.toa.weapons.Weapons
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
-import org.mockito.kotlin.*
 
 class AkkhaTest {
 
@@ -44,13 +43,14 @@ class AkkhaTest {
     fun `should not be attackable during memory phase`() {
         val testBoss = createTestAkkhaBoss()
         
-        // Memory phase starts at tick 101 and lasts for 4 + (pathLevel/2) * 4 ticks
-        // For path level 3: 4 + (3/2) * 4 = 4 + 1 * 4 = 8 ticks
-        // So memory phase is from tick 101 to tick 109
+        // Note: Path level is currently hardcoded to 3 in the Akkha implementation.
+        // This will be made configurable in a future update.
+        // Memory phase starts at tick 101 and lasts for 21 ticks (5 memories * 4 ticks + 1)
+        // So memory phase is from tick 101 to tick 121
         
         assertFalse(testBoss.isAttackable(Tick(102)))
         assertFalse(testBoss.isAttackable(Tick(105)))
-        assertFalse(testBoss.isAttackable(Tick(108)))
+        assertFalse(testBoss.isAttackable(Tick(121))) // Last tick of memory phase
     }
 
     @Test
@@ -58,8 +58,18 @@ class AkkhaTest {
         val testBoss = createTestAkkhaBoss()
         
         // After memory phase ends, the boss should be attackable
-        assertTrue(testBoss.isAttackable(Tick(110)))
+        assertTrue(testBoss.isAttackable(Tick(122))) // First tick after memory phase
         assertTrue(testBoss.isAttackable(Tick(200)))
+    }
+
+    @Test
+    fun `should be attackable the tick after memories end`() {
+        val testBoss = createTestAkkhaBoss()
+        
+        // Memory phase starts at tick 101 and lasts for 21 ticks (5 memories * 4 ticks + 1)
+        // So memory phase ends at tick 121, and boss should be attackable at tick 122
+        assertFalse(testBoss.isAttackable(Tick(121))) // Last tick of memory phase
+        assertTrue(testBoss.isAttackable(Tick(122)))  // First tick after memory phase
     }
 
     @Test
@@ -94,9 +104,14 @@ class AkkhaTest {
     @Test
     fun `should proc shadow at phase boundaries`() {
         val testBoss = createTestAkkhaBoss()
+        val initialHealth = testBoss.health.value
+        val phaseSize = 1470 / 5 // 294
         
-        // Damage boss to a phase boundary
-        testBoss.takeDamage(1470 / 5) // First phase size
+        // Deal massive damage - should be clamped to phase size
+        testBoss.takeDamage(1000)
+        
+        // Should have taken exactly phase size damage
+        assertEquals(initialHealth - phaseSize, testBoss.health.value)
         
         testBoss.maybeProcShadow(Tick(10))
         
@@ -120,13 +135,24 @@ class AkkhaTest {
     fun `should not proc shadow when dead`() {
         val testBoss = createTestAkkhaBoss()
         
+        // Proc & kill all the shadows
+        repeat(4) {
+            testBoss.takeDamage(1000) // Will be clamped to phase size each time
+            testBoss.maybeProcShadow(Tick(0))
+            testBoss.shadow!!.takeDamage(1000)
+        }
+        val lastShadow = testBoss.shadow
+        assertFalse(lastShadow!!.isAlive)
+
         // Kill the boss
-        testBoss.takeDamage(1470)
+        testBoss.takeDamage(1000)
         
-        testBoss.maybeProcShadow(Tick(10))
+        // Boss should be dead
+        assertEquals(0, testBoss.health.value)
         
-        // The boss is dead, so shadow should not be null (the logic doesn't check if boss is alive)
-        assertNotNull(testBoss.shadow)
+        testBoss.maybeProcShadow(Tick(0))
+        
+        assertEquals(lastShadow, testBoss.shadow)
     }
 
     @Test
@@ -140,12 +166,18 @@ class AkkhaTest {
         
         // Should proc shadow
         assertNotNull(testBoss.shadow)
+        val shadow = testBoss.shadow!!
+        
+        // Kill the shadow
+        shadow.takeDamage(1500)
         
         // Try to proc again at the same health level
         testBoss.maybeProcShadow(Tick(20))
         
         // Should not proc again
-        assertNotNull(testBoss.shadow) // Shadow should still exist
+        assertEquals(shadow, testBoss.shadow)
+        // Check its still dead
+        assertFalse(shadow.isAlive)
     }
 
     @Test
@@ -160,9 +192,26 @@ class AkkhaTest {
     fun `should not recommend ZCB spec when health is low`() {
         val testBoss = createTestAkkhaBoss()
         
-        // Damage boss to low health
-        testBoss.takeDamage(1200) // Health = 270
+        // Damage boss to low health (working around the damage clamping)
+        repeat(3) {
+            testBoss.takeDamage(1000)
+            testBoss.maybeProcShadow(Tick(0))
+            testBoss.shadow!!.takeDamage(1000)
+        }
+        testBoss.takeDamage(269)
+        assertEquals(319, testBoss.health.value)
         
+        assertFalse(testBoss.shouldZcbSpec())
+    }
+
+    @Test
+    fun `should not recommend ZCB spec when health is above 500 & damage to cap is less than 110`() {
+        val testBoss = createTestAkkhaBoss()
+
+        // boss phases at 1176, at 1270 hp we are 94 damage away from phasing; hold zcb
+        testBoss.takeDamage(200)
+        assertEquals(1270, testBoss.health.value)
+
         assertFalse(testBoss.shouldZcbSpec())
     }
 
@@ -171,11 +220,15 @@ class AkkhaTest {
         val testBoss = createTestAkkhaBoss()
         
         // Damage boss to health between 320 and 500
-        testBoss.takeDamage(1000) // Health = 470
-        
-        // The logic checks if health > 320, but also checks if maxDamageToCap > 110
-        // At 470 health, maxDamageToCap might not be > 110
-        assertFalse(testBoss.shouldZcbSpec())
+        repeat(3) {
+            testBoss.takeDamage(1000)
+            testBoss.maybeProcShadow(Tick(0))
+            testBoss.shadow!!.takeDamage(1000)
+        }
+        testBoss.takeDamage(118)
+        assertEquals(470, testBoss.health.value)
+
+        assertTrue(testBoss.shouldZcbSpec())
     }
 
     @Test

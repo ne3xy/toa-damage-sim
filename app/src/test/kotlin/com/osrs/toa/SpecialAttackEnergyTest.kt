@@ -137,7 +137,7 @@ class SpecialAttackEnergyTest {
     }
 
     @Test
-    fun `should not indicate regenerating when energy is at 0`() {
+    fun `should indicate regenerating when energy is at 0`() {
         val energy = SpecialAttackEnergy(0)
         assertTrue(energy.isRegenerating())
     }

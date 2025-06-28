@@ -27,7 +27,10 @@ class CombatSimulator(private val player: Player, private val boss: BossFight) {
         val regenerationInterval = if (entity.hasLightbearer) 25 else 50
         val ticksSinceRegenStart = currentTick.value - entity.specRegenStartTick!!.value
         
+        println("Debug: currentTick=${currentTick.value}, specRegenStartTick=${entity.specRegenStartTick!!.value}, ticksSinceRegenStart=$ticksSinceRegenStart, regenerationInterval=$regenerationInterval, energy=${entity.specialAttackEnergy.energy}")
+        
         if (ticksSinceRegenStart > 0 && ticksSinceRegenStart % regenerationInterval == 0) {
+            println("Debug: Regenerating special attack energy!")
             entity.regenerateSpecialAttack()
         }
     }
@@ -36,6 +39,11 @@ class CombatSimulator(private val player: Player, private val boss: BossFight) {
         while (!boss.isFightOver() && currentTick < Tick(700)) {
             simulateTick()
         }
+        
+        if (currentTick >= Tick(700)) {
+            throw IllegalStateException("Simulation timed out after 700 ticks. Fight did not complete.")
+        }
+        
         println("Simulation complete on tick ${currentTick.value}!")
         return currentTick
     }

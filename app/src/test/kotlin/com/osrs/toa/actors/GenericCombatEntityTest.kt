@@ -65,13 +65,32 @@ class GenericCombatEntityTest {
     }
 
     @Test
+    fun `should floor health at zero when taking excessive damage`() {
+        val entity = GenericCombatEntity(
+            name = "Test Entity",
+            health = Health(100)
+        )
+        entity.takeDamage(150)
+        assertEquals(0, entity.health.value) // Health should floor at 0, not go negative
+    }
+
+    @Test
     fun `should be able to attack when cooldown is over and alive`() {
         val entity = GenericCombatEntity(
             name = "Test Entity",
             health = Health(100)
         )
-        val currentTick = Tick(10)
-        assertTrue(entity.canAttack(currentTick))
+        
+        // Set attack cooldown
+        entity.setLastAttackTick(tick = Tick(10), weaponDelay = 5)
+        
+        // Try to attack during cooldown (should fail)
+        val duringCooldown = Tick(12)
+        assertFalse(entity.canAttack(duringCooldown))
+        
+        // Try to attack after cooldown (should succeed)
+        val afterCooldown = Tick(16)
+        assertTrue(entity.canAttack(afterCooldown))
     }
 
     @Test
@@ -90,7 +109,7 @@ class GenericCombatEntityTest {
             name = "Test Entity",
             health = Health(100)
         )
-        entity.setLastAttackTick(Tick(10), 5)
+        entity.setLastAttackTick(tick = Tick(10), weaponDelay = 5)
         val currentTick = Tick(12) // Still in cooldown
         assertFalse(entity.canAttack(currentTick))
     }
@@ -101,7 +120,7 @@ class GenericCombatEntityTest {
             name = "Test Entity",
             health = Health(100)
         )
-        entity.setLastAttackTick(Tick(10), 5)
+        entity.setLastAttackTick(tick = Tick(10), weaponDelay = 5)
         val currentTick = Tick(16) // Cooldown finished
         assertTrue(entity.canAttack(currentTick))
     }
@@ -159,27 +178,13 @@ class GenericCombatEntityTest {
     }
 
     @Test
-    fun `should set last attack tick`() {
-        val entity = GenericCombatEntity(
-            name = "Test Entity",
-            health = Health(100)
-        )
-        val tick = Tick(10)
-        entity.setLastAttackTick(tick, 5)
-        // Note: We can't directly test the private lastAttackTick field,
-        // but we can test the behavior through canAttack
-        assertFalse(entity.canAttack(Tick(12)))
-        assertTrue(entity.canAttack(Tick(16)))
-    }
-
-    @Test
     fun `should throw exception when setting negative attack tick`() {
         val entity = GenericCombatEntity(
             name = "Test Entity",
             health = Health(100)
         )
         assertThrows(IllegalArgumentException::class.java) {
-            entity.setLastAttackTick(Tick(-1), 5)
+            entity.setLastAttackTick(tick = Tick(-1), weaponDelay = 5)
         }
     }
 
@@ -189,7 +194,7 @@ class GenericCombatEntityTest {
             name = "Test Entity",
             health = Health(100)
         )
-        val result = entity.setLastAttackTick(Tick(10), 5)
+        val result = entity.setLastAttackTick(tick = Tick(10), weaponDelay = 5)
         assertSame(entity, result)
     }
 

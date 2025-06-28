@@ -49,6 +49,10 @@ class AkkhaBoss(private val combatEntity: CombatEntity): CombatEntity by combatE
     }
 
     private fun isInMemory(tick: Tick): Boolean {
+        // Note: Path level is currently hardcoded to 3 but will be made configurable in a future update
+        // Memory phase length: numberOfMemories * 4 ticks + 1 tick
+        // Each memory consists of: 2 ticks per symbol + 2 ticks per explosion = 4 ticks total
+        // For path level 3: (4 + 3/2) * 4 + 1 = 5 * 4 + 1 = 21 ticks
         val numberOfMemories = 4 + (pathLevel / 2)
         val nextMemory = lastMemoryEnded + Tick(101)
         thisMemoryEnds = nextMemory + Tick(numberOfMemories * 4)
