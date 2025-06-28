@@ -6,6 +6,7 @@ interface CombatStats {
 
 data class DefaultCombatStats(
     private val defenceLevel: Int,
+    private val magicLevel: Int = 0,
     private val meleeStabDefenceBonus: Int = 0,
     private val meleeSlashDefenceBonus: Int = 0,
     private val meleeCrushDefenceBonus: Int = 0,
@@ -24,7 +25,11 @@ data class DefaultCombatStats(
             AttackStyle.RANGED_HEAVY -> rangedHeavyDefenceBonus
             AttackStyle.MAGIC -> magicDefenceBonus
         }
-        return (defenceLevel + 9) * (styleDefenceBonus + 64)
+        
+        return when (attackStyle) {
+            AttackStyle.MAGIC -> (9 + magicLevel) * (styleDefenceBonus + 64)
+            else -> (defenceLevel + 9) * (styleDefenceBonus + 64)
+        }
     }
 }
 

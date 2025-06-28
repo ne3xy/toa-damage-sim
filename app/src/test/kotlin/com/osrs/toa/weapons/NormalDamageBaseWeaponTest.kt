@@ -209,6 +209,7 @@ class NormalDamageBaseWeaponTest {
 
     private fun createTestTarget(
         defenceLevel: Int = 100,
+        magicLevel: Int = 0,
         meleeStabDefenceBonus: Int = 50,
         rangedDefenceBonus: Int = 50,
         rangedLightDefenceBonus: Int = 50,
@@ -219,6 +220,7 @@ class NormalDamageBaseWeaponTest {
             health = Health(100),
             combatStats = DefaultCombatStats(
                 defenceLevel = defenceLevel,
+                magicLevel = magicLevel,
                 meleeStabDefenceBonus = meleeStabDefenceBonus,
                 rangedDefenceBonus = rangedDefenceBonus,
                 rangedLightDefenceBonus = rangedLightDefenceBonus,

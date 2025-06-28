@@ -17,6 +17,7 @@ class Zebak(
             health = Health(2130),
             combatStats = DefaultCombatStats(
                 defenceLevel = 200, // Level 3 Zebak defence level
+                magicLevel = 200, // Level 3 Zebak magic level
                 meleeStabDefenceBonus = 100,
                 rangedDefenceBonus = 100,
                 magicDefenceBonus = 100

@@ -28,12 +28,13 @@ class PlayerTest {
     @Test
     fun `should attack with main weapon when can attack`() {
         val target = createMockTarget()
-        val player = createTestPlayer()
+        val player = createTestPlayerWithWeapon(deterministicWeapon)
         
+        val initialHealth = target.health.value
         player.attack(Tick(0), target, shouldSpec = { false })
         
-        // Verify that attack cooldown was set (this is deterministic)
-        assertFalse(player.canAttack(Tick(0))) // Should not be able to attack immediately after
+        // Verify target took the expected damage
+        assertEquals(initialHealth - 25, target.health.value)
     }
 
     @Test
@@ -62,6 +63,9 @@ class PlayerTest {
         
         // Verify energy was consumed
         assertEquals(25, player.specialAttackEnergy.energy) // 100 - 75
+        
+        // Verify player is on attack cooldown after special attack
+        assertFalse(player.canAttack(Tick(0))) // Should not be able to attack immediately after
     }
 
     @Test
@@ -82,13 +86,18 @@ class PlayerTest {
     @Test
     fun `should use main weapon when shouldSpec returns false`() {
         val target = createMockTarget()
-        val player = createTestPlayer()
+        val player = createTestPlayerWithWeapon(deterministicWeapon)
         
         val initialEnergy = player.specialAttackEnergy.energy
+        val initialHealth = target.health.value
+        
         player.attack(Tick(0), target, shouldSpec = { false })
         
         // Verify energy was not consumed
         assertEquals(initialEnergy, player.specialAttackEnergy.energy)
+        
+        // Verify target took damage from main weapon
+        assertEquals(initialHealth - 25, target.health.value)
     }
 
     @Test
@@ -131,14 +140,16 @@ class PlayerTest {
     @Test
     fun `should handle multiple attacks`() {
         val target = createMockTarget()
-        val player = createTestPlayer()
+        val player = createTestPlayerWithWeapon(deterministicWeapon)
         
-        player.attack(Tick(0), target)
-        player.attack(Tick(5), target) // After cooldown
-        player.attack(Tick(10), target) // After cooldown
+        val initialHealth = target.health.value
         
-        // Target should have taken damage from multiple attacks
-        assertTrue(target.health.value < 100)
+        player.attack(Tick(0), target, shouldSpec = { false })
+        player.attack(Tick(5), target, shouldSpec = { false }) // After cooldown
+        player.attack(Tick(10), target, shouldSpec = { false }) // After cooldown
+        
+        // Target should have taken damage from multiple attacks (3 * 25 = 75 damage)
+        assertEquals(initialHealth - 75, target.health.value)
     }
 
     @Test
@@ -473,6 +484,14 @@ class PlayerTest {
         override val attackSpeed = 9
         override fun attack(target: CombatEntity): Int {
             return 20 // Fixed damage for testing
+        }
+    }
+
+    private val deterministicWeapon = object : Weapon {
+        override val name = "Deterministic Weapon"
+        override val attackSpeed = 5
+        override fun attack(target: CombatEntity): Int {
+            return 25 // Always deals exactly 25 damage
         }
     }
 

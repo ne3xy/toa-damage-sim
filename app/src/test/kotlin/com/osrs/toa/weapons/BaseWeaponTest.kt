@@ -132,6 +132,7 @@ class BaseWeaponTest {
         val weapon = createTestWeapon(attackStyle = AttackStyle.MAGIC)
         val target = createTestTarget(
             defenceLevel = 100,
+            magicLevel = 100,
             meleeStabDefenceBonus = 200,
             rangedDefenceBonus = 300,
             magicDefenceBonus = 50
@@ -139,7 +140,7 @@ class BaseWeaponTest {
         
         // The weapon should use magic defence bonus (50), not melee (200) or ranged (300)
         val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.MAGIC)
-        assertEquals((100 + 9) * (50 + 64), defenceRoll) // (defenceLevel + 9) * (magicDefenceBonus + 64)
+        assertEquals((9 + 100) * (50 + 64), defenceRoll) // (9 + magicLevel) * (magicDefenceBonus + 64)
     }
 
     @Test
@@ -212,6 +213,7 @@ class BaseWeaponTest {
 
     private fun createTestTarget(
         defenceLevel: Int = 100,
+        magicLevel: Int = 0,
         meleeStabDefenceBonus: Int = 50,
         rangedDefenceBonus: Int = 50,
         rangedLightDefenceBonus: Int = 50,
@@ -222,6 +224,7 @@ class BaseWeaponTest {
             health = Health(100),
             combatStats = DefaultCombatStats(
                 defenceLevel = defenceLevel,
+                magicLevel = magicLevel,
                 meleeStabDefenceBonus = meleeStabDefenceBonus,
                 rangedDefenceBonus = rangedDefenceBonus,
                 rangedLightDefenceBonus = rangedLightDefenceBonus,

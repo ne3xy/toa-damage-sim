@@ -25,7 +25,7 @@ class GenericCombatEntity(
         override val specialAttackEnergy: SpecialAttackEnergy = SpecialAttackEnergy(),
         override val hasLightbearer: Boolean = false,
         override var specRegenStartTick: Tick? = null,
-        override val combatStats: CombatStats = DefaultCombatStats(defenceLevel = 1)
+        override val combatStats: CombatStats = DefaultCombatStats(defenceLevel = 1, magicLevel = 1)
 ) : CombatEntity {
     private var lastAttackTick = Tick(0)
         get() = field
@@ -65,7 +65,7 @@ class GenericCombatEntity(
     
     override fun setLastAttackTick(tick: Tick, weaponDelay: Int): GenericCombatEntity {
         require(tick.value >= 0) { "Attack tick cannot be negative" }
-        require(lastAttackDelay >= 0) { "Attack tick cannot be negative" }
+        require(weaponDelay >= 0) { "Attack tick cannot be negative" }
         lastAttackTick = tick
         lastAttackDelay = weaponDelay
         return this

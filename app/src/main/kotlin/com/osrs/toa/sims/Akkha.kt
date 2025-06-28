@@ -18,6 +18,7 @@ class Akkha(
             health = Health(1470),
             combatStats = DefaultCombatStats(
                 defenceLevel = 200, // Level 3 Akkha defence level
+                magicLevel = 200, // Level 3 Akkha magic level
                 meleeStabDefenceBonus = 100,
                 rangedDefenceBonus = 100,
                 magicDefenceBonus = 100
@@ -96,6 +97,7 @@ class AkkhaBoss(private val combatEntity: CombatEntity): CombatEntity by combatE
                             health = Health(255),
                             combatStats = DefaultCombatStats(
                                 defenceLevel = 100, // Shadow defence level
+                                magicLevel = 100, // Shadow magic level
                                 meleeStabDefenceBonus = 50,
                                 rangedDefenceBonus = 50,
                                 magicDefenceBonus = 50
