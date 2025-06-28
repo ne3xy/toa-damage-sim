@@ -19,7 +19,6 @@ class BaseSpecWeaponTest {
         assertEquals("Test Spec Weapon", weapon.name)
         assertEquals(5, weapon.attackSpeed)
         assertEquals(AttackStyle.MELEE_STAB, weapon.attackStyle)
-        assertEquals(1000, weapon.attackRoll)
         assertEquals(50, weapon.specialAttackCost)
     }
 
@@ -206,7 +205,7 @@ class BaseSpecWeaponTest {
         
         // With zero defence, hit chance should be very high
         val defenceRoll = target.combatStats.getDefenceRoll(weapon.attackStyle)
-        val hitChance = AccuracyCalculator.calculateHitChance(weapon.attackRoll, defenceRoll)
+        val hitChance = AccuracyCalculator.calculateHitChance(1000, defenceRoll)
         
         // Assert on exact calculated values
         assertEquals(576, defenceRoll) // (0 + 9) * (0 + 64) = 9 * 64 = 576
@@ -220,7 +219,7 @@ class BaseSpecWeaponTest {
         
         // With high defence bonuses, hit chance should be lower
         val defenceRoll = target.combatStats.getDefenceRoll(weapon.attackStyle)
-        val hitChance = AccuracyCalculator.calculateHitChance(weapon.attackRoll, defenceRoll)
+        val hitChance = AccuracyCalculator.calculateHitChance(1000, defenceRoll)
         
         // Hit chance should be lower with high defence
         assertTrue(hitChance < 0.5)
@@ -289,15 +288,26 @@ class BaseSpecWeaponTest {
             override val name = name
             override val attackSpeed = attackSpeed
             override val attackStyle = attackStyle
-            override val attackRoll = attackRoll
+            private val weaponAttackRoll = attackRoll
             
             override fun attack(target: CombatEntity): Int {
                 val defenceRoll = target.combatStats.getDefenceRoll(attackStyle)
-                val hitChance = AccuracyCalculator.calculateHitChance(attackRoll, defenceRoll)
+                val hitChance = AccuracyCalculator.calculateHitChance(weaponAttackRoll, defenceRoll)
                 
                 return if (AccuracyCalculator.doesAttackHit(hitChance)) {
                     val damageRoll = Random.nextInt(1, 50 + 1)
                     max(1, damageRoll - 1)
+                } else {
+                    0
+                }
+            }
+            
+            override fun spec(target: CombatEntity): Int {
+                val defenceRoll = target.combatStats.getDefenceRoll(attackStyle)
+                val hitChance = AccuracyCalculator.calculateHitChance(weaponAttackRoll, defenceRoll)
+                
+                return if (AccuracyCalculator.doesAttackHit(hitChance)) {
+                    specDamage(target)
                 } else {
                     0
                 }

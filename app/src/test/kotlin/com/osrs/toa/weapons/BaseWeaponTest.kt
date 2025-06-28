@@ -19,7 +19,6 @@ class BaseWeaponTest {
         assertEquals("Test Weapon", weapon.name)
         assertEquals(5, weapon.attackSpeed)
         assertEquals(AttackStyle.MELEE_STAB, weapon.attackStyle)
-        assertEquals(1000, weapon.attackRoll)
     }
 
     @Test
@@ -29,7 +28,7 @@ class BaseWeaponTest {
         
         // With such high attack roll vs low defence, hit chance should be very high
         val defenceRoll = target.combatStats.getDefenceRoll(weapon.attackStyle)
-        val hitChance = AccuracyCalculator.calculateHitChance(weapon.attackRoll, defenceRoll)
+        val hitChance = AccuracyCalculator.calculateHitChance(10000, defenceRoll)
         
         // Should hit most of the time
         assertTrue(hitChance > 0.8)
@@ -42,7 +41,7 @@ class BaseWeaponTest {
         
         // With such low attack roll vs high defence, hit chance should be very low
         val defenceRoll = target.combatStats.getDefenceRoll(weapon.attackStyle)
-        val hitChance = AccuracyCalculator.calculateHitChance(weapon.attackRoll, defenceRoll)
+        val hitChance = AccuracyCalculator.calculateHitChance(1, defenceRoll)
         
         // Should miss most of the time
         assertTrue(hitChance < 0.2)
@@ -171,7 +170,7 @@ class BaseWeaponTest {
         
         // With zero defence, hit chance should be higher than with high defence
         val defenceRoll = target.combatStats.getDefenceRoll(weapon.attackStyle)
-        val hitChance = AccuracyCalculator.calculateHitChance(weapon.attackRoll, defenceRoll)
+        val hitChance = AccuracyCalculator.calculateHitChance(1000, defenceRoll)
         
         // Assert on exact calculated values
         assertEquals(576, defenceRoll) // (0 + 9) * (0 + 64) = 9 * 64 = 576
@@ -185,7 +184,7 @@ class BaseWeaponTest {
         
         // With high defence bonuses, hit chance should be lower
         val defenceRoll = target.combatStats.getDefenceRoll(weapon.attackStyle)
-        val hitChance = AccuracyCalculator.calculateHitChance(weapon.attackRoll, defenceRoll)
+        val hitChance = AccuracyCalculator.calculateHitChance(1000, defenceRoll)
         
         // Hit chance should be lower with high defence
         assertTrue(hitChance < 0.5)

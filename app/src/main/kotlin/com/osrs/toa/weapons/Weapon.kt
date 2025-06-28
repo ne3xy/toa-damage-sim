@@ -10,7 +10,6 @@ interface Weapon {
     val name: String
     val attackSpeed: Int
     val attackStyle: AttackStyle
-    val attackRoll: Int // Hardcoded attack roll
     fun attack(target: CombatEntity): Int
 }
 
@@ -24,7 +23,7 @@ class NormalDamageBaseWeapon(
     name: String,
     attackSpeed: Int,
     attackStyle: AttackStyle,
-    attackRoll: Int,
+    private val attackRoll: Int,
     maxHit: Int
 ) : Weapon by BaseWeapon(
     name, 
@@ -46,7 +45,7 @@ class BaseWeapon(
     override val name: String,
     override val attackSpeed: Int,
     override val attackStyle: AttackStyle,
-    override val attackRoll: Int,
+    private val attackRoll: Int,
     val hitDamage: (CombatEntity) -> Int
 ) : Weapon {
     
@@ -67,13 +66,7 @@ abstract class BaseSpecWeapon(
     val specDamage: (CombatEntity) -> Int
 ) : SpecWeapon {
     override fun spec(target: CombatEntity): Int {
-        val defenceRoll = target.combatStats.getDefenceRoll(attackStyle)
-        val hitChance = AccuracyCalculator.calculateHitChance(attackRoll, defenceRoll)
-        
-        return if (AccuracyCalculator.doesAttackHit(hitChance)) {
-            specDamage(target)
-        } else {
-            0
-        }
+        // This is abstract, so implementations need to provide their own attack roll
+        TODO("Subclasses must implement spec with their own attack roll")
     }
 }

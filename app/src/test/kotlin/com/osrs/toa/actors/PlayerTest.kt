@@ -464,7 +464,6 @@ class PlayerTest {
         override val name = "Fast Weapon"
         override val attackSpeed = 1
         override val attackStyle = AttackStyle.MELEE_STAB
-        override val attackRoll = 1000
         override fun attack(target: CombatEntity): Int {
             return 10 // Fixed damage for testing
         }
@@ -474,7 +473,6 @@ class PlayerTest {
         override val name = "Slow Weapon"
         override val attackSpeed = 9
         override val attackStyle = AttackStyle.MELEE_STAB
-        override val attackRoll = 1000
         override fun attack(target: CombatEntity): Int {
             return 20 // Fixed damage for testing
         }
@@ -494,7 +492,6 @@ class PlayerTest {
         override val name = "Low Spec Weapon"
         override val attackSpeed = 5
         override val attackStyle = AttackStyle.MELEE_STAB
-        override val attackRoll = 1000
         override val specialAttackCost = 50
         override fun attack(target: CombatEntity): Int {
             return 20 // Fixed damage for testing
