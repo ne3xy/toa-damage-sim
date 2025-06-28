@@ -45,27 +45,20 @@ class BaseWeapon(
     override val attackSpeed: Int,
     private val attackStyle: AttackStyle,
     private val attackRoll: Int,
-    val hitDamage: (CombatEntity) -> Int
+    private val hitDamage: (CombatEntity) -> Int,
+    private val noodleProvider: (Double) -> Boolean = { hitChance ->
+        AccuracyCalculator.doesAttackHit(hitChance)
+    }
 ) : Weapon {
     
     override fun attack(target: CombatEntity): Int {
         val defenceRoll = target.combatStats.getDefenceRoll(attackStyle)
         val hitChance = AccuracyCalculator.calculateHitChance(attackRoll, defenceRoll)
         
-        return if (AccuracyCalculator.doesAttackHit(hitChance)) {
+        return if (noodleProvider(hitChance)) {
             hitDamage(target)
         } else {
             0
         }
-    }
-}
-
-abstract class BaseSpecWeapon(
-    override val specialAttackCost: Int,
-    val specDamage: (CombatEntity) -> Int
-) : SpecWeapon {
-    override fun spec(target: CombatEntity): Int {
-        // This is abstract, so implementations need to provide their own attack roll
-        TODO("Subclasses must implement spec with their own attack roll")
     }
 }
