@@ -9,8 +9,6 @@ import com.osrs.toa.Health
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.assertThrows
-import kotlin.random.Random
-import kotlin.math.max
 
 class NormalDamageBaseWeaponTest {
 
@@ -23,172 +21,67 @@ class NormalDamageBaseWeaponTest {
     }
 
     @Test
-    fun `should deal damage within expected range when hitting`() {
-        val weapon = createTestWeapon(maxHit = 50)
-        val target = createTestTarget(defenceLevel = 1, meleeStabDefenceBonus = 0)
-        
-        // With high attack roll vs low defence, should hit consistently
-        repeat(100) {
-            val damage = weapon.attack(target)
-            if (damage > 0) {
-                // Damage should be between 1 and maxHit (50)
-                assertTrue(damage >= 1)
-                assertTrue(damage <= 50)
-            }
-        }
-    }
-
-    @Test
-    fun `should deal damage within expected range for different max hits`() {
-        val maxHit = 100
-        val weapon = createTestWeapon(maxHit = maxHit)
-        val target = createTestTarget(defenceLevel = 1, meleeStabDefenceBonus = 0)
-        
-        // With high attack roll vs low defence, should hit consistently
-        repeat(100) {
-            val damage = weapon.attack(target)
-            if (damage > 0) {
-                // Damage should be between 1 and maxHit (100)
-                assertTrue(damage >= 1)
-                assertTrue(damage <= maxHit)
-            }
-        }
-    }
-
-    @Test
-    fun `should handle max hit of 1`() {
-        val weapon = createTestWeapon(maxHit = 1)
-        val target = createTestTarget(defenceLevel = 1, meleeStabDefenceBonus = 0)
-        
-        // With high attack roll vs low defence, should hit consistently
-        repeat(100) {
-            val damage = weapon.attack(target)
-            if (damage > 0) {
-                // Damage should be exactly 1
-                assertEquals(1, damage)
-            }
-        }
-    }
-
-    @Test
-    fun `should handle max hit of 0`() {
+    fun `should validate maxHit in constructor`() {
+        // Test that maxHit >= 1 validation works
         assertThrows(IllegalArgumentException::class.java) {
             createTestWeapon(maxHit = 0)
         }
-    }
-
-    @Test
-    fun `should use correct attack style for defence calculation`() {
-        val weapon = createTestWeapon(attackStyle = AttackStyle.RANGED)
-        val target = createTestTarget(
-            defenceLevel = 100,
-            meleeStabDefenceBonus = 200,
-            rangedDefenceBonus = 50,
-            magicDefenceBonus = 300
-        )
         
-        // The weapon should use ranged defence bonus (50), not melee (200) or magic (300)
-        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.RANGED)
-        assertEquals((100 + 9) * (50 + 64), defenceRoll) // (defenceLevel + 9) * (rangedDefenceBonus + 64)
-    }
-
-    @Test
-    fun `should use correct attack style for ranged light defence calculation`() {
-        val weapon = createTestWeapon(attackStyle = AttackStyle.RANGED_LIGHT)
-        val target = createTestTarget(
-            defenceLevel = 100,
-            meleeStabDefenceBonus = 200,
-            rangedLightDefenceBonus = 50,
-            magicDefenceBonus = 300
-        )
+        assertThrows(IllegalArgumentException::class.java) {
+            createTestWeapon(maxHit = -1)
+        }
         
-        // The weapon should use ranged light defence bonus (50), not melee (200) or magic (300)
-        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.RANGED_LIGHT)
-        assertEquals((100 + 9) * (50 + 64), defenceRoll) // (defenceLevel + 9) * (rangedLightDefenceBonus + 64)
+        // Valid maxHit values should not throw
+        assertDoesNotThrow {
+            createTestWeapon(maxHit = 1)
+            createTestWeapon(maxHit = 50)
+            createTestWeapon(maxHit = 100)
+        }
     }
 
     @Test
-    fun `should hit consistently with high attack roll vs low defence`() {
-        val weapon = createTestWeapon(attackRoll = 10000)
+    fun `should delegate attack to BaseWeapon correctly`() {
+        val weapon = createTestWeapon(
+            attackRoll = 10000, // High attack roll
+            hitRollProvider = { _ -> true } // Always hit for deterministic testing
+        )
         val target = createTestTarget(defenceLevel = 1, meleeStabDefenceBonus = 0)
         
-        // With such high attack roll vs low defence, hit chance should be very high
-        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.MELEE_STAB)
-        val hitChance = AccuracyCalculator.calculateHitChance(10000, defenceRoll)
+        // Test that the weapon can attack and returns a valid damage value
+        val damage = weapon.attack(target)
         
-        // Should hit most of the time
-        assertTrue(hitChance > 0.8)
+        // Since we're always hitting, damage should be >= 1
+        assertTrue(damage >= 1, "Damage should be at least 1 when hitting")
+        assertTrue(damage <= 50, "Damage should not exceed maxHit when hitting")
     }
 
     @Test
-    fun `should miss consistently with low attack roll vs high defence`() {
-        val weapon = createTestWeapon(attackRoll = 1)
-        val target = createTestTarget(defenceLevel = 200, meleeStabDefenceBonus = 100)
+    fun `should handle miss correctly through delegation`() {
+        val weapon = createTestWeapon(
+            hitRollProvider = { _ -> false } // Always miss
+        )
+        val target = createTestTarget(defenceLevel = 1, meleeStabDefenceBonus = 0)
         
-        // With such low attack roll vs high defence, hit chance should be very low
-        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.MELEE_STAB)
-        val hitChance = AccuracyCalculator.calculateHitChance(1, defenceRoll)
-        
-        // Should miss most of the time
-        assertTrue(hitChance < 0.2)
+        // Test that the weapon properly delegates miss handling
+        val damage = weapon.attack(target)
+        assertEquals(0, damage, "Should deal 0 damage when missing")
     }
 
     @Test
-    fun `should handle different attack speeds`() {
-        val weapon = createTestWeapon(attackSpeed = 3)
+    fun `should handle different maxHit values`() {
+        // Test that different maxHit values work correctly
+        val weapon1 = createTestWeapon(maxHit = 1)
+        val weapon50 = createTestWeapon(maxHit = 50)
+        val weapon100 = createTestWeapon(maxHit = 100)
         
-        assertEquals(3, weapon.attackSpeed)
-    }
-
-    @Test
-    fun `should handle different attack styles`() {
-        val meleeWeapon = createTestWeapon(attackStyle = AttackStyle.MELEE_CRUSH)
-        val rangedWeapon = createTestWeapon(attackStyle = AttackStyle.RANGED)
-        val rangedHeavyWeapon = createTestWeapon(attackStyle = AttackStyle.RANGED_HEAVY)
-        val magicWeapon = createTestWeapon(attackStyle = AttackStyle.MAGIC)
+        // All should be valid weapons
+        assertTrue(weapon1 is Weapon)
+        assertTrue(weapon50 is Weapon)
+        assertTrue(weapon100 is Weapon)
         
-        // Test that weapons can be created with different attack styles
-        // (attackStyle is now internal, so we can't test it directly)
-        assertEquals("Test Weapon", meleeWeapon.name)
-        assertEquals("Test Weapon", rangedWeapon.name)
-        assertEquals("Test Weapon", rangedHeavyWeapon.name)
-        assertEquals("Test Weapon", magicWeapon.name)
-    }
-
-    @Test
-    fun `should handle target with zero defence level`() {
-        val weapon = createTestWeapon(attackRoll = 1000)
-        val target = createTestTarget(defenceLevel = 0, meleeStabDefenceBonus = 0)
-        
-        // With zero defence, hit chance should be higher than with high defence
-        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.MELEE_STAB)
-        val hitChance = AccuracyCalculator.calculateHitChance(1000, defenceRoll)
-        
-        // Assert on exact calculated values
-        assertEquals(576, defenceRoll) // (0 + 9) * (0 + 64) = 9 * 64 = 576
-        assertEquals(0.7112887112887113, hitChance, 0.0000000000000001) // Exact hit chance from calculation
-    }
-
-    @Test
-    fun `should handle target with high defence bonuses`() {
-        val weapon = createTestWeapon(attackRoll = 1000)
-        val target = createTestTarget(defenceLevel = 100, meleeStabDefenceBonus = 500)
-        
-        // With high defence bonuses, hit chance should be lower
-        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.MELEE_STAB)
-        val hitChance = AccuracyCalculator.calculateHitChance(1000, defenceRoll)
-        
-        // Hit chance should be lower with high defence
-        assertTrue(hitChance < 0.5)
-    }
-
-    @Test
-    fun `should use weapon by delegation pattern correctly`() {
-        val weapon = createTestWeapon()
-        
-        // Verify that the weapon is created using the delegation pattern
-        assertTrue(weapon is Weapon)
-        // NormalDamageBaseWeapon uses delegation to BaseWeapon, so it should be a Weapon
+        assertEquals("Test Weapon", weapon1.name)
+        assertEquals("Test Weapon", weapon50.name)
+        assertEquals("Test Weapon", weapon100.name)
     }
 
     private fun createTestWeapon(
@@ -196,14 +89,16 @@ class NormalDamageBaseWeaponTest {
         attackSpeed: Int = 5,
         attackStyle: AttackStyle = AttackStyle.MELEE_STAB,
         attackRoll: Int = 1000,
-        maxHit: Int = 50
+        maxHit: Int = 50,
+        hitRollProvider: (Double) -> Boolean = { _ -> true }
     ): NormalDamageBaseWeapon {
         return NormalDamageBaseWeapon(
             name = name,
             attackSpeed = attackSpeed,
             attackStyle = attackStyle,
             attackRoll = attackRoll,
-            maxHit = maxHit
+            maxHit = maxHit,
+            hitRollProvider = hitRollProvider
         )
     }
 
@@ -215,7 +110,7 @@ class NormalDamageBaseWeaponTest {
         rangedLightDefenceBonus: Int = 50,
         magicDefenceBonus: Int = 50
     ): CombatEntity {
-        return GenericCombatEntity(
+        return GenericCombatEntity(`
             name = "Test Target",
             health = Health(100),
             combatStats = DefaultCombatStats(

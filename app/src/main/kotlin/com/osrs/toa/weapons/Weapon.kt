@@ -23,7 +23,10 @@ class NormalDamageBaseWeapon(
     attackSpeed: Int,
     attackStyle: AttackStyle,
     private val attackRoll: Int,
-    maxHit: Int
+    maxHit: Int,
+    private val hitRollProvider: (Double) -> Boolean = { hitChance ->
+        AccuracyCalculator.doesAttackHit(hitChance)
+    }
 ) : Weapon by BaseWeapon(
     name, 
     attackSpeed, 
@@ -33,7 +36,8 @@ class NormalDamageBaseWeapon(
         require(maxHit >= 1) { "maxHit must be at least 1" }
         val damageRoll = Random.nextInt(1, maxHit + 1)
         max(1, damageRoll - 1)
-     }
+    },
+    hitRollProvider
 ) {
     init {
         require(maxHit >= 1) { "maxHit must be at least 1" }
@@ -45,8 +49,8 @@ class BaseWeapon(
     override val attackSpeed: Int,
     private val attackStyle: AttackStyle,
     private val attackRoll: Int,
-    private val hitDamage: (CombatEntity) -> Int,
-    private val noodleProvider: (Double) -> Boolean = { hitChance ->
+    val hitDamage: (CombatEntity) -> Int,
+    private val hitRollProvider: (Double) -> Boolean = { hitChance ->
         AccuracyCalculator.doesAttackHit(hitChance)
     }
 ) : Weapon {
@@ -55,7 +59,7 @@ class BaseWeapon(
         val defenceRoll = target.combatStats.getDefenceRoll(attackStyle)
         val hitChance = AccuracyCalculator.calculateHitChance(attackRoll, defenceRoll)
         
-        return if (noodleProvider(hitChance)) {
+        return if (hitRollProvider(hitChance)) {
             hitDamage(target)
         } else {
             0

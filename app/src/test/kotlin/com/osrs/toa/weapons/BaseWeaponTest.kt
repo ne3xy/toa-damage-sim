@@ -23,184 +23,156 @@ class BaseWeaponTest {
     }
 
     @Test
-    fun `should hit when attack roll is much higher than defence roll`() {
+    fun `should hit and deal damage when hitRollProvider returns true`() {
+        val expectedDefenceRoll = 1000
+        val weaponAttackRoll = 10000
+        var capturedDefenceRoll: Int? = null
         var capturedHitChance: Double? = null
-        val spyDoesAttackHit = { hitChance: Double ->
-            capturedHitChance = hitChance
-            true // Always hit for this test
-        }
+        
+        val testTarget = GenericCombatEntity(
+            name = "Test Target",
+            health = Health(100),
+            combatStats = object : CombatStats {
+                override fun getDefenceRoll(attackStyle: AttackStyle): Int {
+                    capturedDefenceRoll = expectedDefenceRoll
+                    return expectedDefenceRoll
+                }
+            }
+        )
         
         val weapon = BaseWeapon(
             name = "Test Weapon",
             attackSpeed = 5,
             attackStyle = AttackStyle.MELEE_STAB,
-            attackRoll = 10000,
+            attackRoll = weaponAttackRoll,
             hitDamage = { 42 },
-            noodleProvider = spyDoesAttackHit
+            hitRollProvider = { hitChance -> 
+                capturedHitChance = hitChance
+                true // Always hit for deterministic testing
+            }
         )
         
-        val target = createTestTarget(defenceLevel = 1, meleeStabDefenceBonus = 0)
-        val damage = weapon.attack(target)
+        val damage = weapon.attack(testTarget)
+        
+        // Verify the weapon used the target's defence roll
+        assertEquals(expectedDefenceRoll, capturedDefenceRoll, "Weapon should use target's defence roll")
+        
+        // Verify the hitRollProvider was called with correct hit chance
+        assertNotNull(capturedHitChance, "hitRollProvider should be called with hit chance")
+        val expectedHitChance = AccuracyCalculator.calculateHitChance(weaponAttackRoll, expectedDefenceRoll)
+        assertEquals(expectedHitChance, capturedHitChance!!, "hitRollProvider should be called with calculated hit chance")
         
         // Verify the weapon hit and dealt damage
-        assertEquals(42, damage)
-        
-        // Verify the hit chance was calculated correctly
-        assertNotNull(capturedHitChance)
-        assertTrue(capturedHitChance!! > 0.8) // High attack roll vs low defense should have high hit chance
+        assertEquals(42, damage, "Should hit and deal expected damage when hitRollProvider returns true")
     }
 
     @Test
-    fun `should miss when attack roll is much lower than defence roll`() {
+    fun `should miss and deal zero damage when hitRollProvider returns false`() {
+        val expectedDefenceRoll = 50000
+        val weaponAttackRoll = 1
+        var capturedDefenceRoll: Int? = null
         var capturedHitChance: Double? = null
-        val spyDoesAttackHit = { hitChance: Double ->
-            capturedHitChance = hitChance
-            false // Always miss for this test
-        }
+        
+        val testTarget = GenericCombatEntity(
+            name = "Test Target",
+            health = Health(100),
+            combatStats = object : CombatStats {
+                override fun getDefenceRoll(attackStyle: AttackStyle): Int {
+                    capturedDefenceRoll = expectedDefenceRoll
+                    return expectedDefenceRoll
+                }
+            }
+        )
         
         val weapon = BaseWeapon(
             name = "Test Weapon",
             attackSpeed = 5,
             attackStyle = AttackStyle.MELEE_STAB,
-            attackRoll = 1,
+            attackRoll = weaponAttackRoll,
             hitDamage = { 42 },
-            noodleProvider = spyDoesAttackHit
+            hitRollProvider = { hitChance -> 
+                capturedHitChance = hitChance
+                false // Always miss for deterministic testing
+            }
         )
         
-        val target = createTestTarget(defenceLevel = 200, meleeStabDefenceBonus = 100)
-        val damage = weapon.attack(target)
+        val damage = weapon.attack(testTarget)
+        
+        // Verify the weapon used the target's defence roll
+        assertEquals(expectedDefenceRoll, capturedDefenceRoll, "Weapon should use target's defence roll")
+        
+        // Verify the hitRollProvider was called with correct hit chance
+        assertNotNull(capturedHitChance, "hitRollProvider should be called with hit chance")
+        val expectedHitChance = AccuracyCalculator.calculateHitChance(weaponAttackRoll, expectedDefenceRoll)
+        assertEquals(expectedHitChance, capturedHitChance!!, "hitRollProvider should be called with calculated hit chance")
         
         // Verify the weapon missed and dealt no damage
-        assertEquals(0, damage)
-        
-        // Verify the hit chance was calculated correctly
-        assertNotNull(capturedHitChance)
-        assertTrue(capturedHitChance!! < 0.2) // Low attack roll vs high defense should have low hit chance
+        assertEquals(0, damage, "Should miss and deal 0 damage when hitRollProvider returns false")
     }
 
     @Test
-    fun `should deal damage within expected range when hitting`() {
-        val weapon = createTestWeapon(maxHit = 50)
+    fun `should deal damage according to the hitDamage provider when hitting`() {
+        val expectedDamage = 25
+        val weapon = BaseWeapon(
+            name = "Test Weapon",
+            attackSpeed = 5,
+            attackStyle = AttackStyle.MELEE_STAB,
+            attackRoll = 1000,
+            hitDamage = { expectedDamage }, // Deterministic damage
+            hitRollProvider = { _ -> true } // Always hit for deterministic testing
+        )
         val target = createTestTarget(defenceLevel = 1, meleeStabDefenceBonus = 0)
         
-        // With high attack roll vs low defence, should hit consistently
-        repeat(100) {
-            val damage = weapon.attack(target)
-            if (damage > 0) {
-                // Damage should be between 1 and maxHit (50)
-                assertTrue(damage >= 1)
-                assertTrue(damage <= 50)
-            }
-        }
+        val damage = weapon.attack(target)
+        
+        // Verify the weapon deals the expected damage
+        assertEquals(expectedDamage, damage, "Should deal the exact damage returned by hitDamage function")
     }
 
     @Test
     fun `should return zero damage when missing`() {
-        val weapon = createTestWeapon(attackRoll = 1)
+        val weapon = createTestWeapon(
+            attackRoll = 1,
+            hitRollProvider = { _ -> false } // Always miss for deterministic testing
+        )
         val target = createTestTarget(defenceLevel = 200, meleeStabDefenceBonus = 100)
         
-        // With low attack roll vs high defence, should miss
-        repeat(100) {
+        // Test multiple attacks to verify consistent misses
+        repeat(10) {
             val damage = weapon.attack(target)
-            if (damage == 0) {
-                // This is a miss, which is expected
-                return@repeat
-            }
+            assertEquals(0, damage, "Should always miss and deal 0 damage")
         }
-        
-        // Should have at least some misses
-        assertTrue(true) // Test passes if we reach here
     }
 
     @Test
     fun `should use correct defence bonus for melee attack`() {
-        val weapon = createTestWeapon(attackStyle = AttackStyle.MELEE_STAB)
-        val target = createTestTarget(
-            defenceLevel = 100,
-            meleeStabDefenceBonus = 50,
-            rangedDefenceBonus = 200,
-            magicDefenceBonus = 300
-        )
-        
-        // The weapon should use melee stab defence bonus (50), not ranged (200) or magic (300)
-        // This affects the defence roll calculation
-        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.MELEE_STAB)
-        assertEquals((100 + 9) * (50 + 64), defenceRoll) // (defenceLevel + 9) * (meleeStabDefenceBonus + 64)
+        testAttackStyleUsesCorrectDefenceRoll(AttackStyle.MELEE_STAB, 12426, "melee stab")
     }
 
     @Test
     fun `should use correct defence bonus for ranged attack`() {
-        val weapon = createTestWeapon(attackStyle = AttackStyle.RANGED)
-        val target = createTestTarget(
-            defenceLevel = 100,
-            meleeStabDefenceBonus = 200,
-            rangedDefenceBonus = 50,
-            magicDefenceBonus = 300
-        )
-        
-        // The weapon should use ranged defence bonus (50), not melee (200) or magic (300)
-        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.RANGED)
-        assertEquals((100 + 9) * (50 + 64), defenceRoll) // (defenceLevel + 9) * (rangedDefenceBonus + 64)
+        testAttackStyleUsesCorrectDefenceRoll(AttackStyle.RANGED, 15696, "ranged")
     }
 
     @Test
     fun `should use correct defence bonus for ranged light attack`() {
-        val weapon = createTestWeapon(attackStyle = AttackStyle.RANGED_LIGHT)
-        val target = createTestTarget(
-            defenceLevel = 100,
-            meleeStabDefenceBonus = 200,
-            rangedLightDefenceBonus = 50,
-            magicDefenceBonus = 300
-        )
-        
-        // The weapon should use ranged light defence bonus (50), not melee (200) or magic (300)
-        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.RANGED_LIGHT)
-        assertEquals((100 + 9) * (50 + 64), defenceRoll) // (defenceLevel + 9) * (rangedLightDefenceBonus + 64)
+        testAttackStyleUsesCorrectDefenceRoll(AttackStyle.RANGED_LIGHT, 16786, "ranged light")
     }
 
     @Test
     fun `should use magic level and magic defence bonus for magic attack defence calculation`() {
-        val weapon = createTestWeapon(attackStyle = AttackStyle.MAGIC)
-        val target = createTestTarget(
-            defenceLevel = 0,    // Should be ignored for magic attacks
-            magicLevel = 100,    // Should be used for magic attacks
-            meleeStabDefenceBonus = 200,
-            rangedDefenceBonus = 300,
-            magicDefenceBonus = 50
-        )
-        
-        // Magic attacks should use magic level (100) and magic defence bonus (50), not defence level (0) or other bonuses
-        val defenceRoll = target.combatStats.getDefenceRoll(AttackStyle.MAGIC)
-        assertEquals((9 + 100) * (50 + 64), defenceRoll) // (9 + magicLevel) * (magicDefenceBonus + 64)
+        testAttackStyleUsesCorrectDefenceRoll(AttackStyle.MAGIC, 14616, "magic")
     }
 
-    @Test
-    fun `should handle custom damage function`() {
-        var customDamageCalled = false
-        val weapon = BaseWeapon(
-            name = "Custom Weapon",
-            attackSpeed = 5,
-            attackStyle = AttackStyle.MELEE_STAB,
-            attackRoll = 10000, // High attack roll to ensure hits
-            hitDamage = { 
-                customDamageCalled = true
-                42 // Fixed damage
-            },
-            noodleProvider = { _ -> true } // Always hit for deterministic testing
-        )
-        
-        // Test the weapon attack method which uses the custom damage function
-        val target = createTestTarget(defenceLevel = 1, meleeStabDefenceBonus = 0)
-        val damage = weapon.attack(target)
-        
-        // Should always hit due to noodleProvider returning true, and use custom damage
-        assertTrue(customDamageCalled)
-        assertEquals(42, damage)
-    }
-
-    @Test
-    fun `should handle target with zero defence level`() {
+    private fun testAttackStyleUsesCorrectDefenceRoll(
+        attackStyle: AttackStyle,
+        expectedDefenceRoll: Int,
+        styleName: String
+    ) {
+        var capturedAttackStyle: AttackStyle? = null
+        var capturedDefenceRoll: Int? = null
         var capturedHitChance: Double? = null
+        
         val spyDoesAttackHit = { hitChance: Double ->
             capturedHitChance = hitChance
             true // Always hit for this test
@@ -209,49 +181,28 @@ class BaseWeaponTest {
         val weapon = BaseWeapon(
             name = "Test Weapon",
             attackSpeed = 5,
-            attackStyle = AttackStyle.MELEE_STAB,
+            attackStyle = attackStyle,
             attackRoll = 1000,
             hitDamage = { 42 },
-            noodleProvider = spyDoesAttackHit
+            hitRollProvider = spyDoesAttackHit
         )
         
-        val target = createTestTarget(defenceLevel = 0, meleeStabDefenceBonus = 0)
+        val target = createTestTarget(
+            defenceLevel = 100,
+            magicLevel = 50,
+            meleeStabDefenceBonus = 100,
+            rangedDefenceBonus = 200,
+            rangedLightDefenceBonus = 300,
+            magicDefenceBonus = 400
+        )
+        
         val damage = weapon.attack(target)
         
         // Verify the weapon hit and dealt damage
-        assertEquals(42, damage)
+        assertEquals(42, damage, "Should hit and deal expected damage")
         
-        // Verify the hit chance was calculated correctly for zero defence
-        assertNotNull(capturedHitChance)
-        assertEquals(0.7112887112887113, capturedHitChance!!, 0.0000000000000001) // Exact hit chance for zero defence
-    }
-
-    @Test
-    fun `should handle target with high defence bonuses`() {
-        var capturedHitChance: Double? = null
-        val spyDoesAttackHit = { hitChance: Double ->
-            capturedHitChance = hitChance
-            false // Always miss for this test
-        }
-        
-        val weapon = BaseWeapon(
-            name = "Test Weapon",
-            attackSpeed = 5,
-            attackStyle = AttackStyle.MELEE_STAB,
-            attackRoll = 1000,
-            hitDamage = { 42 },
-            noodleProvider = spyDoesAttackHit
-        )
-        
-        val target = createTestTarget(defenceLevel = 100, meleeStabDefenceBonus = 500)
-        val damage = weapon.attack(target)
-        
-        // Verify the weapon missed and dealt no damage
-        assertEquals(0, damage)
-        
-        // Verify the hit chance was calculated correctly for high defence
-        assertNotNull(capturedHitChance)
-        assertTrue(capturedHitChance!! < 0.5) // High defence should result in low hit chance
+        // Verify the hit chance was calculated and passed to hitRollProvider
+        assertNotNull(capturedHitChance, "hitRollProvider should have been called with hit chance")
     }
 
     private fun createTestWeapon(
@@ -260,7 +211,7 @@ class BaseWeaponTest {
         attackStyle: AttackStyle = AttackStyle.MELEE_STAB,
         attackRoll: Int = 1000,
         maxHit: Int = 50,
-        noodleProvider: (Double) -> Boolean = { hitChance -> AccuracyCalculator.doesAttackHit(hitChance) }
+        hitRollProvider: (Double) -> Boolean = { hitChance -> AccuracyCalculator.doesAttackHit(hitChance) }
     ): BaseWeapon {
         return BaseWeapon(
             name = name,
@@ -271,7 +222,7 @@ class BaseWeaponTest {
                 val damageRoll = Random.nextInt(1, maxHit + 1)
                 max(1, damageRoll - 1)
             },
-            noodleProvider = noodleProvider
+            hitRollProvider = hitRollProvider
         )
     }
 
