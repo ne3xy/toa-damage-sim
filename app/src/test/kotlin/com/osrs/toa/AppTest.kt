@@ -4,10 +4,41 @@
 package com.osrs.toa
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
 
 class AppTest {
+    
     @Test
     fun testCombatSimulatorCreation() {
         main()
+    }
+    
+    @Test
+    fun `should create tick with value`() {
+        val tick = Tick(5)
+        assertEquals(5, tick.value)
+    }
+    
+    @Test
+    fun `should perform tick arithmetic`() {
+        val tick1 = Tick(10)
+        val tick2 = Tick(5)
+        
+        val sum = tick1 + tick2
+        val difference = tick1 - tick2
+        
+        assertEquals(15, sum.value)
+        assertEquals(5, difference.value)
+    }
+    
+    @Test
+    fun `should compare ticks`() {
+        val tick1 = Tick(5)
+        val tick2 = Tick(10)
+        val tick3 = Tick(5)
+        
+        assertTrue(tick1 < tick2)
+        assertTrue(tick2 > tick1)
+        assertTrue(tick1 == tick3)
     }
 }
