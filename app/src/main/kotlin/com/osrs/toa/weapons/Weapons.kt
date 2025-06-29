@@ -44,6 +44,14 @@ object Weapons {
         }
     }
 
+    val Zebak6WayTwistedBow: Weapon = NormalDamageBaseWeapon(
+        name = "Twisted Bow",
+        attackSpeed = 5,
+        attackStyle = AttackStyle.RANGED,
+        attackRoll = 56105,
+        maxHit = 81
+    )
+
     private val BandosGodswordBaseWeapon = NormalDamageBaseWeapon(
         name = "Bandos Godsword",
         attackSpeed = 6,

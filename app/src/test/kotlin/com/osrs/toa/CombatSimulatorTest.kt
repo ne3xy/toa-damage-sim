@@ -13,7 +13,7 @@ class CombatSimulatorTest {
 
     @Test
     fun `should create combat simulator with player and boss`() {
-        val player = createTestPlayerNoLightbearer()
+        val player = createTestPlayer()
         val boss = createMockBossFight()
         
         val simulator = CombatSimulator(player, boss)
@@ -22,7 +22,7 @@ class CombatSimulatorTest {
 
     @Test
     fun `should simulate single tick`() {
-        val player = createTestPlayerNoLightbearer()
+        val player = createTestPlayer()
         val boss = mockk<BossFight>(relaxed = true)
         
         val simulator = CombatSimulator(player, boss)
@@ -33,7 +33,7 @@ class CombatSimulatorTest {
 
     @Test
     fun `should handle special attack energy regeneration`() {
-        val player = createTestPlayerNoLightbearer()
+        val player = createTestPlayer()
         val boss = mockk<BossFight>(relaxed = true)
         
         // Set player to have low energy and start regeneration
@@ -81,7 +81,7 @@ class CombatSimulatorTest {
 
     @Test
     fun `should not regenerate when energy is full`() {
-        val player = spyk(createTestPlayerNoLightbearer())
+        val player = spyk(createTestPlayer())
         val boss = mockk<BossFight>(relaxed = true)
         
         // Player has full energy
@@ -100,7 +100,7 @@ class CombatSimulatorTest {
 
     @Test
     fun `should run simulation until fight is over`() {
-        val player = createTestPlayerNoLightbearer()
+        val player = createTestPlayer()
         val boss = mockk<BossFight>(relaxed = true)
         
         // Mock boss to end fight after 5 ticks
@@ -119,7 +119,7 @@ class CombatSimulatorTest {
 
     @Test
     fun `should run simulation until max ticks reached`() {
-        val player = createTestPlayerNoLightbearer()
+        val player = createTestPlayer()
         val boss = mockk<BossFight>(relaxed = true)
         
         // Mock boss to never end fight
@@ -137,7 +137,7 @@ class CombatSimulatorTest {
 
     @Test
     fun `should handle spec regen start tick initialization`() {
-        val player = createTestPlayerNoLightbearer()
+        val player = createTestPlayer()
         val boss = mockk<BossFight>(relaxed = true)
         
         // Player has low energy but no regen start tick
@@ -159,7 +159,7 @@ class CombatSimulatorTest {
 
     @Test
     fun `should unset spec regen start tick when energy is full`() {
-        val player = createTestPlayerNoLightbearer()
+        val player = createTestPlayer()
         val boss = mockk<BossFight>(relaxed = true)
         
         // Player has full energy but regen start tick is set
@@ -171,13 +171,13 @@ class CombatSimulatorTest {
         assertNull(player.specRegenStartTick)
     }
 
-    private fun createTestPlayerNoLightbearer(): Player {
+    private fun createTestPlayer(): Player {
         val combatEntity = GenericCombatEntity(
             name = "Test Player",
             health = Health(99),
             hasLightbearer = false
         )
-        return Player(combatEntity, Weapons.MagussShadow, Weapons.ZaryteCrossbow)
+        return Player(combatEntity)
     }
 
     private fun createTestPlayerWithLightbearer(): Player {
@@ -186,7 +186,7 @@ class CombatSimulatorTest {
             health = Health(99),
             hasLightbearer = true
         )
-        return Player(combatEntity, Weapons.MagussShadow, Weapons.ZaryteCrossbow)
+        return Player(combatEntity)
     }
 
     private fun createMockBossFight(): BossFight {

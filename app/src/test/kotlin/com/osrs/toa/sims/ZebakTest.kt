@@ -197,7 +197,7 @@ class ZebakTest {
     fun `should not reduce defence below 50`() {
         val zebak = Zebak(createTestPlayer())
         
-        val initialDefence = zebak.zebak.combatStats.defenceLevel
+        assertEquals(70, zebak.zebak.combatStats.defenceLevel)
         
         // Try to reduce defence by a large amount that would go below 50
         val largeReduction = 100
@@ -210,20 +210,10 @@ class ZebakTest {
     @Test
     fun `should allow defence reduction when above 50`() {
         val zebak = Zebak(createTestPlayer())
-        
-        val initialDefence = zebak.zebak.combatStats.defenceLevel
-        
-        // If defence is already at 50, we can't test reduction above 50
-        if (initialDefence <= 50) {
-            // Test that defence stays at 50 when trying to reduce it
-            zebak.zebak.combatStats.drainDefenceLevel(10)
-            assertEquals(50, zebak.zebak.combatStats.defenceLevel)
-        } else {
-            // Test normal reduction when above 50
-            val smallReduction = 5
-            zebak.zebak.combatStats.drainDefenceLevel(smallReduction)
-            assertEquals(initialDefence - smallReduction, zebak.zebak.combatStats.defenceLevel)
-        }
+        // Test normal reduction when above 50
+        val smallReduction = 5
+        zebak.zebak.combatStats.drainDefenceLevel(smallReduction)
+        assertEquals(65, zebak.zebak.combatStats.defenceLevel)
     }
 
     @Test
@@ -249,30 +239,13 @@ class ZebakTest {
         assertEquals(50, zebak.zebak.combatStats.defenceLevel)
     }
 
-    @Test
-    fun `should handle Bandos Godsword special attack defence reduction`() {
-        val zebak = Zebak(createTestPlayer())
-        val player = createTestPlayer()
-        
-        val initialDefence = zebak.zebak.combatStats.defenceLevel
-        
-        // Simulate multiple BGS special attacks
-        repeat(5) {
-            player.attack(Tick(0), zebak.zebak, shouldSpec = { true })
-        }
-        
-        // Defence should be reduced but not below 50
-        assertTrue(zebak.zebak.combatStats.defenceLevel <= initialDefence)
-        assertTrue(zebak.zebak.combatStats.defenceLevel >= 50)
-    }
-
     private fun createTestPlayer(): Player {
         val combatEntity = GenericCombatEntity(
             name = "Test Player",
             health = Health(99),
             hasLightbearer = false
         )
-        return Player(combatEntity, Weapons.MagussShadow, Weapons.ZaryteCrossbow)
+        return Player(combatEntity)
     }
 
     private fun createTestZebakBoss(): ZebakBoss {

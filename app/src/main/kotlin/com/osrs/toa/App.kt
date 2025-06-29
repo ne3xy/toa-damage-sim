@@ -6,21 +6,21 @@ package com.osrs.toa
 import com.osrs.toa.actors.GenericCombatEntity
 import com.osrs.toa.actors.Player
 import com.osrs.toa.sims.Akkha
+import com.osrs.toa.sims.Zebak
 import com.osrs.toa.weapons.Weapons
 
 fun main() {
     var totalLength = 0;
-    for (i in 1..1000) {
+    val iterations = 1000
+    for (i in 1..iterations) {
         val player = Player(
-                GenericCombatEntity(
-                        health = Health(99),
-                        name = "Player",
-                        hasLightbearer = true
-                ),
-                Weapons.TumekensShadow,
-                Weapons.ZaryteCrossbow
+            GenericCombatEntity(
+                health = Health(99),
+                name = "Player",
+                hasLightbearer = true
+            )
         )
-        val monster = Akkha(player)
+        val monster = Zebak(player)
         val simulator = CombatSimulator(player, monster)
         val fightLength = simulator.runSimulation()
         // Print final status
@@ -28,7 +28,7 @@ fun main() {
         println("fight lasted ${fightLength.value} ticks")
         totalLength += fightLength.value
     }
-    val avgLength = totalLength/1000
-    println("Average fight length over 1k iterations: $avgLength")
+    val avgLength = totalLength/iterations
+    println("Average fight length over $iterations iterations: $avgLength")
 
 }
