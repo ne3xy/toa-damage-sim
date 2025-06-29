@@ -2,8 +2,11 @@ package com.osrs.toa.sims
 
 import com.osrs.toa.Health
 import com.osrs.toa.Tick
+import com.osrs.toa.actors.CombatEntity
 import com.osrs.toa.actors.GenericCombatEntity
 import com.osrs.toa.actors.Player
+import com.osrs.toa.actors.DefaultCombatStats
+import com.osrs.toa.actors.AttackStyle
 import com.osrs.toa.weapons.Weapons
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
@@ -190,13 +193,59 @@ class ZebakTest {
         assertFalse(testBoss.isAlive)
     }
 
+    @Test
+    fun `should not reduce defence below 50`() {
+        val zebak = Zebak(createTestPlayer())
+        
+        assertEquals(70, zebak.zebak.combatStats.defenceLevel)
+        
+        // Try to reduce defence by a large amount that would go below 50
+        val largeReduction = 100
+        zebak.zebak.combatStats.drainDefenceLevel(largeReduction)
+        
+        // Defence should be capped at 50, not reduced to initialDefence - 100
+        assertEquals(50, zebak.zebak.combatStats.defenceLevel)
+    }
+
+    @Test
+    fun `should allow defence reduction when above 50`() {
+        val zebak = Zebak(createTestPlayer())
+        // Test normal reduction when above 50
+        val smallReduction = 5
+        zebak.zebak.combatStats.drainDefenceLevel(smallReduction)
+        assertEquals(65, zebak.zebak.combatStats.defenceLevel)
+    }
+
+    @Test
+    fun `should handle multiple defence reductions correctly`() {
+        val zebak = Zebak(createTestPlayer())
+        
+        assertEquals(70, zebak.zebak.combatStats.defenceLevel) // Verify initial defence level
+        
+        // First reduction: should work normally
+        zebak.zebak.combatStats.drainDefenceLevel(5)
+        assertEquals(65, zebak.zebak.combatStats.defenceLevel)
+        
+        // Second reduction: should work normally
+        zebak.zebak.combatStats.drainDefenceLevel(5)
+        assertEquals(60, zebak.zebak.combatStats.defenceLevel)
+        
+        // Third reduction: should cap at 50
+        zebak.zebak.combatStats.drainDefenceLevel(15)
+        assertEquals(50, zebak.zebak.combatStats.defenceLevel)
+        
+        // Fourth reduction: should stay at 50
+        zebak.zebak.combatStats.drainDefenceLevel(10)
+        assertEquals(50, zebak.zebak.combatStats.defenceLevel)
+    }
+
     private fun createTestPlayer(): Player {
         val combatEntity = GenericCombatEntity(
             name = "Test Player",
             health = Health(99),
             hasLightbearer = false
         )
-        return Player(combatEntity, Weapons.MagussShadow, Weapons.ZaryteCrossbow)
+        return Player(combatEntity)
     }
 
     private fun createTestZebakBoss(): ZebakBoss {

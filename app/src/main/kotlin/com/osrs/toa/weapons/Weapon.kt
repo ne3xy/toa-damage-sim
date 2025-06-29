@@ -15,7 +15,6 @@ interface Weapon {
 //TODO: Should specweapon have a base attack? maybe cleaner if eg zcb spec & zcb mainhand are separate weapons
 interface SpecWeapon: Weapon {
     val specialAttackCost: Int
-    fun spec(target: CombatEntity): Int
 }
 
 class NormalDamageBaseWeapon(

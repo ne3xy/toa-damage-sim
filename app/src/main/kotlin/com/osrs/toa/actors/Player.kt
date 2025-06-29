@@ -1,13 +1,11 @@
 package com.osrs.toa.actors
 
 import com.osrs.toa.Tick
-import com.osrs.toa.weapons.SpecWeapon
 import com.osrs.toa.weapons.Weapon
+import com.osrs.toa.weapons.SpecWeapon
 
 class Player(
-        combatEntity: GenericCombatEntity,
-        private val mainWeapon: Weapon,
-        private  val specWeapon: SpecWeapon
+    combatEntity: GenericCombatEntity
 ) : CombatEntity by combatEntity {
     
     private var lastSurgePotTick: Tick? = null
@@ -17,20 +15,19 @@ class Player(
     private var liquidAdrenalineStartTick: Tick? = null
     private val liquidAdrenalineDuration = 250
     
-    fun attack(currentTick: Tick, target: CombatEntity, shouldSpec: () -> Boolean = {true}) {
+    fun attack(currentTick: Tick, target: CombatEntity, normalWeapon: Weapon, specWeapon: SpecWeapon?, shouldSpec: Boolean) {
         if (canAttack(currentTick)) {
-            if (shouldSpec() && specialAttackEnergy.canUseSpecial(getSpecCost(specWeapon.specialAttackCost, currentTick))) {
+            if (shouldSpec && specWeapon != null && specialAttackEnergy.canUseSpecial(getSpecCost(specWeapon.specialAttackCost, currentTick))) {
                 setLastAttackTick(currentTick, specWeapon.attackSpeed)
-                val damage = specWeapon.spec(target)
+                val damage = specWeapon.attack(target)
                 target.takeDamage(damage)
                 specialAttackEnergy.consume(getSpecCost(specWeapon.specialAttackCost, currentTick))
                 println("dealt $damage damage to ${target.name} with ${specWeapon.name} on tick ${currentTick.value}. it has ${target.health.value} health")
-
             } else {
-                setLastAttackTick(currentTick, mainWeapon.attackSpeed)
-                val damage = mainWeapon.attack(target)
+                setLastAttackTick(currentTick, normalWeapon.attackSpeed)
+                val damage = normalWeapon.attack(target)
                 target.takeDamage(damage)
-                println("dealt $damage damage to ${target.name} with ${mainWeapon.name} on tick ${currentTick.value}. it has ${target.health.value} health")
+                println("dealt $damage damage to ${target.name} with ${normalWeapon.name} on tick ${currentTick.value}. it has ${target.health.value} health")
             }
         }
     }

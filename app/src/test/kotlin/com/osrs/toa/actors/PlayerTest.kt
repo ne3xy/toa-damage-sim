@@ -18,7 +18,7 @@ class PlayerTest {
             health = Health(99),
             hasLightbearer = false
         )
-        val player = Player(combatEntity, Weapons.MagussShadow, Weapons.ZaryteCrossbow)
+        val player = Player(combatEntity)
         
         assertEquals("Test Player", player.name)
         assertEquals(99, player.health.value)
@@ -26,12 +26,12 @@ class PlayerTest {
     }
 
     @Test
-    fun `should attack with main weapon when can attack`() {
+    fun `should attack with main weapon`() {
         val target = createMockTarget()
         val player = createTestPlayerWithWeapon(deterministicWeapon)
         
         val initialHealth = target.health.value
-        player.attack(Tick(0), target, shouldSpec = { false })
+        player.attack(Tick(0), target, deterministicWeapon, null, false)
         
         // Verify target took the expected damage
         assertEquals(initialHealth - 25, target.health.value)
@@ -46,7 +46,7 @@ class PlayerTest {
         player.setLastAttackTick(Tick(0), 5)
         
         val initialHealth = target.health.value
-        player.attack(Tick(2), target) // Still in cooldown
+        player.attack(Tick(2), target, Weapons.MagussShadow, null, false) // Still in cooldown
         
         assertEquals(initialHealth, target.health.value)
     }
@@ -59,7 +59,7 @@ class PlayerTest {
         // Ensure player has enough energy for ZCB spec (75)
         assertEquals(100, player.specialAttackEnergy.energy)
         
-        player.attack(Tick(0), target, shouldSpec = { true })
+        player.attack(Tick(0), target, Weapons.MagussShadow, Weapons.ZaryteCrossbow, true)
         
         // Verify energy was consumed
         assertEquals(25, player.specialAttackEnergy.energy) // 100 - 75
@@ -77,7 +77,7 @@ class PlayerTest {
         player.specialAttackEnergy.consume(80)
         assertEquals(20, player.specialAttackEnergy.energy)
         
-        player.attack(Tick(0), target, shouldSpec = { true })
+        player.attack(Tick(0), target, Weapons.MagussShadow, Weapons.ZaryteCrossbow, true)
         
         // Verify energy was not consumed (still 20)
         assertEquals(20, player.specialAttackEnergy.energy)
@@ -91,7 +91,7 @@ class PlayerTest {
         val initialEnergy = player.specialAttackEnergy.energy
         val initialHealth = target.health.value
         
-        player.attack(Tick(0), target, shouldSpec = { false })
+        player.attack(Tick(0), target, deterministicWeapon, Weapons.ZaryteCrossbow, false)
         
         // Verify energy was not consumed
         assertEquals(initialEnergy, player.specialAttackEnergy.energy)
@@ -110,7 +110,7 @@ class PlayerTest {
         assertFalse(player.isAlive)
         
         val initialHealth = target.health.value
-        player.attack(Tick(0), target)
+        player.attack(Tick(0), target, Weapons.MagussShadow, null, false)
         
         assertEquals(initialHealth, target.health.value)
     }
@@ -120,7 +120,7 @@ class PlayerTest {
         val target = createMockTarget()
         val player = createTestPlayer()
         
-        player.attack(Tick(10), target)
+        player.attack(Tick(10), target, Weapons.MagussShadow, null, false)
         
         // Should not be able to attack immediately after
         assertFalse(player.canAttack(Tick(11)))
@@ -131,7 +131,7 @@ class PlayerTest {
         val target = createMockTarget()
         val player = createTestPlayer()
         
-        player.attack(Tick(10), target, shouldSpec = { true })
+        player.attack(Tick(10), target, Weapons.MagussShadow, Weapons.ZaryteCrossbow, true)
         
         // Should not be able to attack immediately after
         assertFalse(player.canAttack(Tick(11)))
@@ -144,9 +144,9 @@ class PlayerTest {
         
         val initialHealth = target.health.value
         
-        player.attack(Tick(0), target, shouldSpec = { false })
-        player.attack(Tick(5), target, shouldSpec = { false }) // After cooldown
-        player.attack(Tick(10), target, shouldSpec = { false }) // After cooldown
+        player.attack(Tick(0), target, deterministicWeapon, null, false)
+        player.attack(Tick(5), target, deterministicWeapon, null, false) // After cooldown
+        player.attack(Tick(10), target, deterministicWeapon, null, false) // After cooldown
         
         // Target should have taken damage from multiple attacks (3 * 25 = 75 damage)
         assertEquals(initialHealth - 75, target.health.value)
@@ -161,7 +161,7 @@ class PlayerTest {
         player.specialAttackEnergy.consume(25) // 100 - 75 = 25
         assertEquals(75, player.specialAttackEnergy.energy)
         
-        player.attack(Tick(0), target, shouldSpec = { true })
+        player.attack(Tick(0), target, Weapons.MagussShadow, Weapons.ZaryteCrossbow, true)
         
         assertEquals(0, player.specialAttackEnergy.energy)
     }
@@ -173,7 +173,7 @@ class PlayerTest {
             health = Health(99),
             hasLightbearer = true
         )
-        val player = Player(combatEntity, Weapons.MagussShadow, Weapons.ZaryteCrossbow)
+        val player = Player(combatEntity)
         
         assertTrue(player.hasLightbearer)
     }
@@ -184,7 +184,7 @@ class PlayerTest {
         val player = createTestPlayerWithWeapon(fastWeapon)
         
         // Attack at tick 0 with main weapon
-        player.attack(Tick(0), target, shouldSpec = { false })
+        player.attack(Tick(0), target, fastWeapon, null, false)
         
         // Should not be able to attack at tick 0 (still in cooldown)
         assertFalse(player.canAttack(Tick(0)))
@@ -199,7 +199,7 @@ class PlayerTest {
         val player = createTestPlayerWithWeapon(slowWeapon)
         
         // Attack at tick 0 with main weapon
-        player.attack(Tick(0), target, shouldSpec = { false })
+        player.attack(Tick(0), target, slowWeapon, null, false)
         
         // Should not be able to attack at tick 8 (still in cooldown)
         assertFalse(player.canAttack(Tick(8)))
@@ -214,13 +214,13 @@ class PlayerTest {
         val player = createTestPlayerWithWeapon(fastWeapon)
         
         // First attack at tick 0 with main weapon
-        player.attack(Tick(0), target, shouldSpec = { false })
+        player.attack(Tick(0), target, fastWeapon, null, false)
         
         // Second attack at tick 1 (after fast weapon cooldown: 0 + 1 = 1)
-        player.attack(Tick(1), target, shouldSpec = { false })
+        player.attack(Tick(1), target, fastWeapon, null, false)
         
         // Third attack at tick 2 (after fast weapon cooldown: 1 + 1 = 2)
-        player.attack(Tick(2), target, shouldSpec = { false })
+        player.attack(Tick(2), target, fastWeapon, null, false)
         
         // Target should have taken damage from multiple attacks
         assertTrue(target.health.value < 100)
@@ -232,7 +232,7 @@ class PlayerTest {
         val player = createTestPlayerWithWeapon(fastWeapon)
         
         // Attack with fast weapon at tick 0 with main weapon
-        player.attack(Tick(0), target, shouldSpec = { false })
+        player.attack(Tick(0), target, fastWeapon, null, false)
         
         // Should be able to attack at tick 1 (0 + 1 = 1)
         assertTrue(player.canAttack(Tick(1)))
@@ -241,7 +241,7 @@ class PlayerTest {
         val slowPlayer = createTestPlayerWithWeapon(slowWeapon)
         
         // Attack with slow weapon at tick 0 with main weapon
-        slowPlayer.attack(Tick(0), target, shouldSpec = { false })
+        slowPlayer.attack(Tick(0), target, slowWeapon, null, false)
         
         // Should not be able to attack at tick 1 (still in slow weapon cooldown: 0 + 9 = 9)
         assertFalse(slowPlayer.canAttack(Tick(1)))
@@ -408,7 +408,7 @@ class PlayerTest {
         
         // Attack with spec - should use halved cost (75/2 = 37.5)
         val target = createMockTarget()
-        player.attack(Tick(1), target, shouldSpec = { true })
+        player.attack(Tick(1), target, Weapons.MagussShadow, Weapons.ZaryteCrossbow, true)
         
         // Should have consumed 37.5 energy instead of 75
         // Internal precision: 1000 - 375 = 625, displayed as 62
@@ -429,7 +429,7 @@ class PlayerTest {
         
         // Attack at tick 0 (effect active) - should consume halved cost (50/2 = 25)
         val target = createMockTarget()
-        player.attack(Tick(0), target, shouldSpec = { true })
+        player.attack(Tick(0), target, Weapons.MagussShadow, lowSpecWeapon, true)
         assertEquals(75, player.specialAttackEnergy.energy) // 100 - 25 = 75
         
         // Wait for effect to expire and try to drink again
@@ -437,11 +437,11 @@ class PlayerTest {
         assertFalse(thirdResult)
         
         // Attack at tick 249 (effect still active) - should consume halved cost
-        player.attack(Tick(245), target, shouldSpec = { true })
+        player.attack(Tick(245), target, Weapons.MagussShadow, lowSpecWeapon, true)
         assertEquals(50, player.specialAttackEnergy.energy) // 50 - 25 = 25
         
         // Attack at tick 250 (effect expired) - should consume full cost
-        player.attack(Tick(250), target, shouldSpec = { true })
+        player.attack(Tick(250), target, Weapons.MagussShadow, lowSpecWeapon, true)
         assertEquals(0, player.specialAttackEnergy.energy) // 25 - 50 = 0 (capped at 0)
     }
 
@@ -451,7 +451,7 @@ class PlayerTest {
             health = Health(99),
             hasLightbearer = false
         )
-        return Player(combatEntity, Weapons.MagussShadow, Weapons.ZaryteCrossbow)
+        return Player(combatEntity)
     }
 
     private fun createTestPlayerWithWeapon(weapon: Weapon): Player {
@@ -460,7 +460,7 @@ class PlayerTest {
             health = Health(99),
             hasLightbearer = false
         )
-        return Player(combatEntity, weapon, Weapons.ZaryteCrossbow)
+        return Player(combatEntity)
     }
 
     private fun createMockTarget(): GenericCombatEntity {
@@ -501,7 +501,7 @@ class PlayerTest {
             health = Health(99),
             hasLightbearer = false
         )
-        return Player(combatEntity, Weapons.MagussShadow, lowSpecWeapon)
+        return Player(combatEntity)
     }
 
     // Test weapon with 50 spec cost
@@ -510,9 +510,6 @@ class PlayerTest {
         override val attackSpeed = 5
         override val specialAttackCost = 50
         override fun attack(target: CombatEntity): Int {
-            return 20 // Fixed damage for testing
-        }
-        override fun spec(target: CombatEntity): Int {
             return 30 // Fixed damage for testing
         }
     }
