@@ -12,13 +12,11 @@ fun main() {
     var totalLength = 0;
     for (i in 1..1000) {
         val player = Player(
-                GenericCombatEntity(
-                        health = Health(99),
-                        name = "Player",
-                        hasLightbearer = true
-                ),
-                Weapons.TumekensShadow,
-                Weapons.ZaryteCrossbow
+            GenericCombatEntity(
+                health = Health(99),
+                name = "Player",
+                hasLightbearer = true
+            )
         )
         val monster = Akkha(player)
         val simulator = CombatSimulator(player, monster)

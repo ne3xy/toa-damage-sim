@@ -325,7 +325,7 @@ class AkkhaTest {
             health = Health(99),
             hasLightbearer = false
         )
-        return Player(combatEntity, Weapons.MagussShadow, Weapons.ZaryteCrossbow)
+        return Player(combatEntity)
     }
 
     private fun createTestAkkhaBoss(): AkkhaBoss {
