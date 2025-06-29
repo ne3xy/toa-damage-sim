@@ -12,46 +12,58 @@ import com.osrs.toa.weapons.Weapons
 import com.osrs.toa.weapons.Weapon
 import com.osrs.toa.weapons.SpecWeapon
 import com.osrs.toa.weapons.SpecStrategy
+import com.osrs.toa.PlayerLoadout
 import kotlin.math.min
+import com.osrs.toa.actors.ToaCombatEntity
+
+object AkkhaConstants {
+    const val BASE_HP = 400
+    const val SHADOW_BASE_HP = 70
+}
 
 class Akkha(
-        private val player: Player
+        private val loadout: PlayerLoadout,
+        specStrategy: SpecStrategy? = null,
+        private val invocationLevel: Int,
+        private val pathLevel: Int
 ): BossFight {
-    //hardcode 530 level3
-    val akkha = AkkhaBoss(GenericCombatEntity(
-            name = "530 Level 3 Akkha",
-            health = Health(1470),
+    // Calculate scaled HP based on invocation and path level
+    private val scaledHp = ToaCombatEntity.calculateScaledHp(AkkhaConstants.BASE_HP, invocationLevel, pathLevel)
+    
+    val akkha = AkkhaBoss(
+        GenericCombatEntity(
+            name = "$invocationLevel Level $pathLevel Akkha",
+            health = Health(scaledHp),
             combatStats = ToaMonsterCombatStats(DefaultCombatStats(
                 defenceLevel = 80, // Level 3 Akkha defence level
                 magicLevel = 100, // Level 3 Akkha magic level
                 rangedDefenceBonus = 60,
                 rangedHeavyDefenceBonus = 60,
                 magicDefenceBonus = 10
-            ), invocationLevel = 530)
-    ))
+            ), invocationLevel = invocationLevel)
+        ),
+        pathLevel = pathLevel,
+        invocationLevel = invocationLevel
+    )
     
-    private val specStrategy = AkkhaMainFightStrategy(akkha)
+    // Use provided strategy or default to AkkhaMainFightStrategy
+    private val specStrategy = specStrategy ?: AkkhaMainFightStrategy(akkha)
 
     override fun onTick(tick: Tick) {
         if (akkha.isAttackable(tick)) {
-            if (player.specialAttackEnergy.energy < 50) {
-                player.drinkSurgePot(tick)
+            if (loadout.player.specialAttackEnergy.energy < 50) {
+                loadout.player.drinkSurgePot(tick)
             }
-            
-            val (normalWeapon, specWeapon, shouldSpec) = specStrategy.selectWeapons(tick)
-            
-            // Drink liquid adrenaline before first ZCB spec
-            if (tick.value == 5) {
-                player.drinkLiquidAdrenaline(tick)
+            val (normalWeapon, specWeapon, shouldSpec) = specStrategy.selectWeapons(tick, loadout.mainWeapon)
+            if (shouldSpec && tick.value != 0) {
+                loadout.player.drinkLiquidAdrenaline(tick)
             }
-            
-            player.attack(tick, akkha, normalWeapon, specWeapon, shouldSpec)
+            loadout.player.attack(tick, akkha, normalWeapon, specWeapon, shouldSpec)
             akkha.maybeProcShadow(tick)
         } else if (akkha.shadow?.isAttackable(tick) == true) {
-            // For shadows, no spec weapon (null)
-            player.attack(tick, akkha.shadow!!, Weapons.MagussShadow, null, false)
+            loadout.player.attack(tick, akkha.shadow!!, loadout.mainWeapon, null, false)
             if (!akkha.shadow!!.isAlive) {
-                player.specialAttackEnergy.regenerate(15)
+                loadout.player.specialAttackEnergy.regenerate(15)
             }
         }
     }
@@ -60,8 +72,8 @@ class Akkha(
 }
 
 class AkkhaMainFightStrategy(private val akkha: AkkhaBoss) : SpecStrategy {
-    override fun selectWeapons(tick: Tick): Triple<Weapon, SpecWeapon?, Boolean> {
-        val normalWeapon = Weapons.MagussShadow
+    override fun selectWeapons(tick: Tick, mainWeapon: Weapon): Triple<Weapon, SpecWeapon?, Boolean> {
+        val normalWeapon = mainWeapon
         val specWeapon = Weapons.ZaryteCrossbow
         val shouldSpec = tick.value != 0 && akkha.shouldZcbSpec()
         
@@ -69,10 +81,13 @@ class AkkhaMainFightStrategy(private val akkha: AkkhaBoss) : SpecStrategy {
     }
 }
 
-class AkkhaBoss(private val combatEntity: CombatEntity): CombatEntity by combatEntity {
+class AkkhaBoss(
+    private val combatEntity: CombatEntity,
+    private val pathLevel: Int,
+    private val invocationLevel: Int
+): CombatEntity by combatEntity {
     private val maxHealth = combatEntity.health.value
     private val phaseSize = maxHealth / 5
-    private val pathLevel = 3
     private var lastMemoryEnded = Tick(0)
     private lateinit var thisMemoryEnds: Tick
 
@@ -111,17 +126,18 @@ class AkkhaBoss(private val combatEntity: CombatEntity): CombatEntity by combatE
 
     fun maybeProcShadow(tick: Tick) {
         if (isAlive && health.value % phaseSize == 0 && !hpIsTopOfThePhase()) {
+            val scaledShadowHp = ToaCombatEntity.calculateScaledHp(AkkhaConstants.SHADOW_BASE_HP, invocationLevel, pathLevel)
             shadow = AkkhaShadow(
                     GenericCombatEntity(
-                            name = "530 Level 3 Akkha's Shadow",
-                            health = Health(255),
+                            name = "$invocationLevel Level $pathLevel Akkha's Shadow",
+                            health = Health(scaledShadowHp),
                             combatStats = ToaMonsterCombatStats(DefaultCombatStats(
                                 defenceLevel = 30, // Shadow defence level
                                 magicLevel = 100, // Shadow magic level
                                 rangedDefenceBonus = 60,
                                 rangedHeavyDefenceBonus = 60,
                                 magicDefenceBonus = 10
-                            ), invocationLevel = 530)
+                            ), invocationLevel = invocationLevel)
                     ),
                     attackableOn = Tick(tick.value + 6),
                     bossHpProccedAt = health.value
