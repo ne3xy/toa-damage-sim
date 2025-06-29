@@ -201,7 +201,7 @@ class ZebakTest {
         
         // Try to reduce defence by a large amount that would go below 50
         val largeReduction = 100
-        zebak.zebak.combatStats.reduceDefenceLevel(largeReduction)
+        zebak.zebak.combatStats.drainDefenceLevel(largeReduction)
         
         // Defence should be capped at 50, not reduced to initialDefence - 100
         assertEquals(50, zebak.zebak.combatStats.defenceLevel)
@@ -216,12 +216,12 @@ class ZebakTest {
         // If defence is already at 50, we can't test reduction above 50
         if (initialDefence <= 50) {
             // Test that defence stays at 50 when trying to reduce it
-            zebak.zebak.combatStats.reduceDefenceLevel(10)
+            zebak.zebak.combatStats.drainDefenceLevel(10)
             assertEquals(50, zebak.zebak.combatStats.defenceLevel)
         } else {
             // Test normal reduction when above 50
             val smallReduction = 5
-            zebak.zebak.combatStats.reduceDefenceLevel(smallReduction)
+            zebak.zebak.combatStats.drainDefenceLevel(smallReduction)
             assertEquals(initialDefence - smallReduction, zebak.zebak.combatStats.defenceLevel)
         }
     }
@@ -233,19 +233,19 @@ class ZebakTest {
         assertEquals(70, zebak.zebak.combatStats.defenceLevel) // Verify initial defence level
         
         // First reduction: should work normally
-        zebak.zebak.combatStats.reduceDefenceLevel(5)
+        zebak.zebak.combatStats.drainDefenceLevel(5)
         assertEquals(65, zebak.zebak.combatStats.defenceLevel)
         
         // Second reduction: should work normally
-        zebak.zebak.combatStats.reduceDefenceLevel(5)
-        assertEquals(55, zebak.zebak.combatStats.defenceLevel)
+        zebak.zebak.combatStats.drainDefenceLevel(5)
+        assertEquals(60, zebak.zebak.combatStats.defenceLevel)
         
         // Third reduction: should cap at 50
-        zebak.zebak.combatStats.reduceDefenceLevel(15)
+        zebak.zebak.combatStats.drainDefenceLevel(15)
         assertEquals(50, zebak.zebak.combatStats.defenceLevel)
         
         // Fourth reduction: should stay at 50
-        zebak.zebak.combatStats.reduceDefenceLevel(10)
+        zebak.zebak.combatStats.drainDefenceLevel(10)
         assertEquals(50, zebak.zebak.combatStats.defenceLevel)
     }
 

@@ -4,8 +4,10 @@ import kotlin.math.max
 
 interface CombatStats {
     val defenceLevel: Int
+    val magicLevel: Int
     fun getDefenceRoll(attackStyle: AttackStyle): Int
-    fun reduceDefenceLevel(amount: Int)
+    fun drainDefenceLevel(amount: Int)
+    fun drainMagicLevel(amount: Int)
 }
 
 class ToaMonsterCombatStats(
@@ -20,18 +22,25 @@ class ToaMonsterCombatStats(
     override val defenceLevel: Int
         get() = combatStats.defenceLevel
     
+    override val magicLevel: Int
+        get() = combatStats.magicLevel
+    
     override fun getDefenceRoll(attackStyle: AttackStyle): Int {
         return (combatStats.getDefenceRoll(attackStyle) * (1 + (.02 * invocationLevel / 5))).toInt()
     }
     
-    override fun reduceDefenceLevel(amount: Int) {
-        combatStats.reduceDefenceLevel(amount)
+    override fun drainDefenceLevel(amount: Int) {
+        combatStats.drainDefenceLevel(amount)
+    }
+    
+    override fun drainMagicLevel(amount: Int) {
+        combatStats.drainMagicLevel(amount)
     }
 }
 
 class DefaultCombatStats(
     defenceLevel: Int,
-    private val magicLevel: Int = 0,
+    magicLevel: Int = 0,
     private val meleeStabDefenceBonus: Int = 0,
     private val meleeSlashDefenceBonus: Int = 0,
     private val meleeCrushDefenceBonus: Int = 0,
@@ -41,6 +50,11 @@ class DefaultCombatStats(
     private val magicDefenceBonus: Int = 0
 ) : CombatStats {
     override var defenceLevel: Int = defenceLevel
+        private set(value) {
+            field = value
+        }
+    
+    override var magicLevel: Int = magicLevel
         private set(value) {
             field = value
         }
@@ -63,9 +77,29 @@ class DefaultCombatStats(
     }
     
     //TODO: Implement stat regen
-    override fun reduceDefenceLevel(amount: Int) {
+    override fun drainDefenceLevel(amount: Int) {
         require(amount >= 0) { "Defence reduction amount must be non-negative" }
         defenceLevel = max(0, defenceLevel - amount)
+    }
+    
+    override fun drainMagicLevel(amount: Int) {
+        require(amount >= 0) { "Magic reduction amount must be non-negative" }
+        magicLevel = max(0, magicLevel - amount)
+    }
+}
+
+class DefenceDrainCappedCombatStats(
+    private val baseCombatStats: CombatStats,
+    private val drainCap: Int
+    ) : CombatStats by baseCombatStats {
+        private val maxDefence = baseCombatStats.defenceLevel
+    override fun drainDefenceLevel(amount: Int) {
+        val currentDefence = baseCombatStats.defenceLevel
+        val newDefence = max(maxDefence - drainCap, currentDefence - amount)
+        val actualReduction = currentDefence - newDefence
+        if (actualReduction > 0) {
+            baseCombatStats.drainDefenceLevel(actualReduction)
+        }
     }
 }
 

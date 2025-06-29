@@ -34,11 +34,13 @@ class BaseWeaponTest {
             health = Health(100),
             combatStats = object : CombatStats {
                 override val defenceLevel: Int = 100
+                override val magicLevel: Int = 99
                 override fun getDefenceRoll(attackStyle: AttackStyle): Int {
                     capturedDefenceRoll = expectedDefenceRoll
                     return expectedDefenceRoll
                 }
-                override fun reduceDefenceLevel(amount: Int) { /* no-op for test */ }
+                override fun drainDefenceLevel(amount: Int) { /* no-op for test */ }
+                override fun drainMagicLevel(amount: Int) { /* no-op for test */ }
             }
         )
         
@@ -80,11 +82,13 @@ class BaseWeaponTest {
             health = Health(100),
             combatStats = object : CombatStats {
                 override val defenceLevel: Int = 100
+                override val magicLevel: Int = 99
                 override fun getDefenceRoll(attackStyle: AttackStyle): Int {
                     capturedDefenceRoll = expectedDefenceRoll
                     return expectedDefenceRoll
                 }
-                override fun reduceDefenceLevel(amount: Int) { /* no-op for test */ }
+                override fun drainDefenceLevel(amount: Int) { /* no-op for test */ }
+                override fun drainMagicLevel(amount: Int) { /* no-op for test */ }
             }
         )
         

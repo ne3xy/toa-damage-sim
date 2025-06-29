@@ -172,12 +172,12 @@ class WeaponsTest {
         // For this test, we'll just verify the method exists and can be called
         // In a real scenario, you'd need to mock the random behavior
         
-        // Test that the reduceDefenceLevel method exists and works
-        target.combatStats.reduceDefenceLevel(1)
+        // Test that the drainDefenceLevel method exists and works
+        target.combatStats.drainDefenceLevel(1)
         assertEquals(initialDefenceLevel - 1, (target.combatStats as DefaultCombatStats).defenceLevel)
         
         // Test that defence level can't go below 0
-        target.combatStats.reduceDefenceLevel(100)
+        target.combatStats.drainDefenceLevel(100)
         assertEquals(0, (target.combatStats as DefaultCombatStats).defenceLevel)
     }
 

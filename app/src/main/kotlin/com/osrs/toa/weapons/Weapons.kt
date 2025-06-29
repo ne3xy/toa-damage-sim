@@ -56,7 +56,7 @@ object Weapons {
         override val specialAttackCost = 50
         override fun attack(target: CombatEntity): Int {
             val damage = BandosGodswordBaseWeapon.attack(target)
-            target.combatStats.reduceDefenceLevel(damage)
+            target.combatStats.drainDefenceLevel(damage)
             return damage
         }
     }
