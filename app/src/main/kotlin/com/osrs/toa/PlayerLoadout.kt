@@ -13,10 +13,11 @@ import com.osrs.toa.sims.ZebakMainFightStrategy
 import com.osrs.toa.sims.AkkhaMainFightStrategy
 
 /**
- * Represents a player loadout with specific strategy
+ * Represents a player loadout with specific weapons and strategy
  */
 interface PlayerLoadout {
     val player: Player
+    val mainWeapon: Weapon
     val strategy: SpecStrategy
 }
 
@@ -34,32 +35,30 @@ object PlayerLoadoutFactory {
             health = Health(99),
             hasLightbearer = false
         ))
-        val akkhaBoss = Akkha(player).akkha
-        val strategy = AkkhaMainFightStrategy(akkhaBoss)
+        val mainWeapon = Weapons.MagussShadow
+        
         return object : PlayerLoadout {
             override val player = player
-            override val strategy = strategy
-            private val normalWeapon = Weapons.MagussShadow
-            private val specWeapon = Weapons.ZaryteCrossbow
+            override val mainWeapon = mainWeapon
+            override val strategy = AkkhaMainFightStrategy(Akkha(this, invocationLevel = 530, pathLevel = 3).akkha)
         }
     }
     
     /**
      * Creates a player with Lightbearer=false, BGS + Twisted Bow
      */
-    fun createBgsTbowLoadout(): PlayerLoadout {
+    fun createBgsTbowZebakLoadout(): PlayerLoadout {
         val player = Player(GenericCombatEntity(
             name = "BGS+TBow Player",
             health = Health(99),
             hasLightbearer = false
         ))
-        val zebakBoss = Zebak(player).zebak
-        val strategy = ZebakMainFightStrategy(zebakBoss)
+        val mainWeapon = Weapons.Zebak6WayTwistedBow
+        
         return object : PlayerLoadout {
             override val player = player
-            override val strategy = strategy
-            private val normalWeapon = Weapons.Zebak6WayTwistedBow
-            private val specWeapon = Weapons.BandosGodsword
+            override val mainWeapon = mainWeapon
+            override val strategy = ZebakMainFightStrategy(Zebak(this, invocationLevel = 530, pathLevel = 3).zebak)
         }
     }
     
@@ -72,13 +71,12 @@ object PlayerLoadoutFactory {
             health = Health(99),
             hasLightbearer = true
         ))
-        val akkhaBoss = Akkha(player).akkha
-        val strategy = AkkhaMainFightStrategy(akkhaBoss)
+        val mainWeapon = Weapons.MagussShadow
+        
         return object : PlayerLoadout {
             override val player = player
-            override val strategy = strategy
-            private val normalWeapon = Weapons.MagussShadow
-            private val specWeapon = Weapons.ZaryteCrossbow
+            override val mainWeapon = mainWeapon
+            override val strategy = AkkhaMainFightStrategy(Akkha(this, invocationLevel = 530, pathLevel = 3).akkha)
         }
     }
     
@@ -91,13 +89,42 @@ object PlayerLoadoutFactory {
             health = Health(99),
             hasLightbearer = true
         ))
-        val zebakBoss = Zebak(player).zebak
-        val strategy = ZebakMainFightStrategy(zebakBoss)
+        val mainWeapon = Weapons.Zebak6WayTwistedBow
+        
         return object : PlayerLoadout {
             override val player = player
-            override val strategy = strategy
-            private val normalWeapon = Weapons.Zebak6WayTwistedBow
-            private val specWeapon = Weapons.BandosGodsword
+            override val mainWeapon = mainWeapon
+            override val strategy = ZebakMainFightStrategy(Zebak(this, invocationLevel = 530, pathLevel = 3).zebak)
         }
     }
+}
+
+class AkkhaLoadout(
+    override val player: Player,
+    override val mainWeapon: Weapon = Weapons.MagussShadow
+) : PlayerLoadout {
+    override val strategy = AkkhaMainFightStrategy(Akkha(this, invocationLevel = 530, pathLevel = 3).akkha)
+}
+
+class AkkhaLoadoutWithCustomStrategy(
+    override val player: Player,
+    override val mainWeapon: Weapon = Weapons.MagussShadow,
+    private val customStrategy: SpecStrategy
+) : PlayerLoadout {
+    override val strategy = AkkhaMainFightStrategy(Akkha(this, customStrategy, invocationLevel = 530, pathLevel = 3).akkha)
+}
+
+class ZebakLoadout(
+    override val player: Player,
+    override val mainWeapon: Weapon = Weapons.Zebak6WayTwistedBow
+) : PlayerLoadout {
+    override val strategy = ZebakMainFightStrategy(Zebak(this, invocationLevel = 530, pathLevel = 3).zebak)
+}
+
+class ZebakLoadoutWithCustomStrategy(
+    override val player: Player,
+    override val mainWeapon: Weapon = Weapons.Zebak6WayTwistedBow,
+    private val customStrategy: SpecStrategy
+) : PlayerLoadout {
+    override val strategy = ZebakMainFightStrategy(Zebak(this, customStrategy, invocationLevel = 530, pathLevel = 3).zebak)
 } 

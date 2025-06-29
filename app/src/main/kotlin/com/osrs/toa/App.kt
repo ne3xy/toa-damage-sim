@@ -6,8 +6,11 @@ package com.osrs.toa
 import com.osrs.toa.actors.GenericCombatEntity
 import com.osrs.toa.actors.Player
 import com.osrs.toa.sims.Akkha
+import com.osrs.toa.sims.AkkhaMainFightStrategy
 import com.osrs.toa.sims.Zebak
+import com.osrs.toa.sims.ZebakMainFightStrategy
 import com.osrs.toa.weapons.Weapons
+import com.osrs.toa.weapons.Weapon
 
 fun main() {
     var totalLength = 0;
@@ -20,7 +23,14 @@ fun main() {
                 hasLightbearer = true
             )
         )
-        val monster = Zebak(player)
+        
+        val loadout = object : PlayerLoadout {
+            override val player = player
+            override val mainWeapon = Weapons.Zebak6WayTwistedBow
+            override val strategy = AkkhaMainFightStrategy(Akkha(this, invocationLevel = 530, pathLevel = 3).akkha)
+        }
+        
+        val monster = Akkha(loadout, invocationLevel = 530, pathLevel = 3)
         val simulator = CombatSimulator(player, monster)
         val fightLength = simulator.runSimulation()
         // Print final status

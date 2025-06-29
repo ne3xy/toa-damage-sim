@@ -13,6 +13,7 @@ import com.osrs.toa.weapons.Weapons
 import com.osrs.toa.weapons.Weapon
 import com.osrs.toa.weapons.SpecWeapon
 import com.osrs.toa.weapons.SpecStrategy
+import com.osrs.toa.PlayerLoadout
 import kotlin.math.max
 import com.osrs.toa.actors.ToaCombatEntity
 
@@ -21,10 +22,10 @@ object ZebakConstants {
 }
 
 class Zebak(
-    private val player: Player,
+    private val loadout: PlayerLoadout,
     specStrategy: SpecStrategy? = null,
-    private val invocationLevel: Int = 530,
-    private val pathLevel: Int = 3
+    private val invocationLevel: Int,
+    private val pathLevel: Int
 ): BossFight {
     private val defenceReductionThreshold = 13
     private val healthThreshold = 0.5 // 50% health
@@ -56,18 +57,14 @@ class Zebak(
 
     override fun onTick(tick: Tick) {
         if (zebak.isAttackable(tick)) {
-            if (player.specialAttackEnergy.energy < 50) {
-                player.drinkSurgePot(tick)
+            if (loadout.player.specialAttackEnergy.energy < 50) {
+                loadout.player.drinkSurgePot(tick)
             }
-            
-            val (normalWeapon, specWeapon, shouldSpec) = specStrategy.selectWeapons(tick)
-            
-            // Drink liquid adrenaline before first ZCB spec
+            val (normalWeapon, specWeapon, shouldSpec) = specStrategy.selectWeapons(tick, loadout.mainWeapon)
             if (shouldSpec && tick.value != 0) {
-                player.drinkLiquidAdrenaline(tick)
+                loadout.player.drinkLiquidAdrenaline(tick)
             }
-            
-            player.attack(tick, zebak, normalWeapon, specWeapon, shouldSpec)
+            loadout.player.attack(tick, zebak, normalWeapon, specWeapon, shouldSpec)
         }
     }
 
@@ -78,15 +75,21 @@ class ZebakMainFightStrategy(private val zebak: ZebakBoss) : SpecStrategy {
     // Capture initial values for comparison
     private val initialDefence = zebak.combatStats.defenceLevel
     private val initialHealth = zebak.health.value
-    override fun selectWeapons(tick: Tick): Triple<Weapon, SpecWeapon?, Boolean> {
-        val normalWeapon = Weapons.Zebak6WayTwistedBow
-        val shouldSpec = tick.value != 0 && zebak.shouldZcbSpec()
+    override fun selectWeapons(tick: Tick, mainWeapon: Weapon): Triple<Weapon, SpecWeapon?, Boolean> {
+        val normalWeapon = mainWeapon
         
-        val specWeapon = if (shouldUseBgs()) {
+        val shouldUseBgs = shouldUseBgs()
+        val shouldUseZcb = zebak.shouldZcbSpec()
+        
+        val specWeapon = if (shouldUseBgs) {
             Weapons.BandosGodsword
-        } else {
+        } else if (shouldUseZcb) {
             Weapons.ZaryteCrossbow
+        } else {
+            null
         }
+        
+        val shouldSpec = tick.value != 0 && (shouldUseBgs || shouldUseZcb)
         
         return Triple(normalWeapon, specWeapon, shouldSpec)
     }

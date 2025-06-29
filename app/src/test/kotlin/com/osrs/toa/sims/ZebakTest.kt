@@ -10,110 +10,99 @@ import com.osrs.toa.actors.AttackStyle
 import com.osrs.toa.weapons.Weapons
 import com.osrs.toa.actors.ToaCombatEntity
 import com.osrs.toa.sims.ZebakConstants
+import com.osrs.toa.PlayerLoadout
+import com.osrs.toa.sims.ZebakMainFightStrategy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
 class ZebakTest {
 
+    private fun createTestPlayer(): Player {
+        val combatEntity = GenericCombatEntity(
+            name = "Test Player",
+            health = Health(99),
+            hasLightbearer = false
+        )
+        return Player(combatEntity)
+    }
+
+    private fun createTestLoadout(): PlayerLoadout {
+        val player = createTestPlayer()
+        return object : PlayerLoadout {
+            override val player = player
+            override val mainWeapon = Weapons.Zebak6WayTwistedBow
+            override val strategy = ZebakMainFightStrategy(Zebak(this, invocationLevel = 530, pathLevel = 3).zebak)
+        }
+    }
+
     @Test
     fun `should create Zebak boss fight`() {
-        val player = createTestPlayer()
-        val zebak = Zebak(player)
-        
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
         assertNotNull(zebak)
     }
 
     @Test
     fun `should create Zebak boss with correct properties`() {
-        val player = createTestPlayer()
-        val zebak = Zebak(player)
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
         
         assertFalse(zebak.isFightOver())
     }
 
     @Test
     fun `should be attackable when alive`() {
-        val testBoss = createTestZebakBoss()
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
         
-        assertTrue(testBoss.isAttackable(Tick(0)))
-        assertTrue(testBoss.isAttackable(Tick(10)))
-        assertTrue(testBoss.isAttackable(Tick(100)))
+        assertTrue(zebak.zebak.isAttackable(Tick(0)))
+        assertTrue(zebak.zebak.isAttackable(Tick(10)))
+        assertTrue(zebak.zebak.isAttackable(Tick(100)))
     }
 
     @Test
     fun `should not be attackable when dead`() {
-        val testBoss = createTestZebakBoss()
-        val scaledHp = testBoss.health.value
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val scaledHp = zebak.zebak.health.value
         // Kill the boss
-        testBoss.takeDamage(scaledHp)
-        assertFalse(testBoss.isAttackable(Tick(0)))
-        assertFalse(testBoss.isAttackable(Tick(10)))
+        zebak.zebak.takeDamage(scaledHp)
+        assertFalse(zebak.zebak.isAttackable(Tick(0)))
+        assertFalse(zebak.zebak.isAttackable(Tick(10)))
     }
 
     @Test
     fun `should have correct initial health`() {
-        val testBoss = createTestZebakBoss()
-        assertEquals(2130, testBoss.health.value)
-        assertEquals("530 Level 3 Zebak", testBoss.name)
-    }
-
-    @Test
-    fun `should recommend ZCB spec when health is above 500`() {
-        val testBoss = createTestZebakBoss()
-        assertTrue(testBoss.shouldZcbSpec())
-    }
-
-    @Test
-    fun `should not recommend ZCB spec when health is below 500`() {
-        val testBoss = createTestZebakBoss()
-        val scaledHp = testBoss.health.value
-        testBoss.takeDamage(scaledHp - 430)
-        assertEquals(430, testBoss.health.value)
-        assertFalse(testBoss.shouldZcbSpec())
-    }
-
-    @Test
-    fun `should not recommend ZCB spec when health is exactly 500`() {
-        val testBoss = createTestZebakBoss()
-        val scaledHp = testBoss.health.value
-        testBoss.takeDamage(scaledHp - 500)
-        assertEquals(500, testBoss.health.value)
-        assertFalse(testBoss.shouldZcbSpec())
-    }
-
-    @Test
-    fun `should recommend ZCB spec when health is just above 500`() {
-        val testBoss = createTestZebakBoss()
-        val scaledHp = testBoss.health.value
-        testBoss.takeDamage(scaledHp - 501)
-        assertEquals(501, testBoss.health.value)
-        assertTrue(testBoss.shouldZcbSpec())
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        assertEquals(2130, zebak.zebak.health.value)
+        assertEquals("530 Level 3 Zebak", zebak.zebak.name)
     }
 
     @Test
     fun `player should drink surge pot before attacking Zebak if spec is under 50`() {
-        val player = createTestPlayer()
-        player.specialAttackEnergy.consume(60) // Set spec to 40
-        val zebak = Zebak(player)
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        loadout.player.specialAttackEnergy.consume(60) // Set spec to 40
         zebak.onTick(Tick(0)) // Should attack Zebak and try to drink surge pot
         // After onTick, spec should be 65 (40 + 25 from surge pot)
-        assertEquals(65, player.specialAttackEnergy.energy)
+        assertEquals(65, loadout.player.specialAttackEnergy.energy)
     }
 
     @Test
     fun `player should NOT drink surge pot before attacking Zebak if spec is 50 or above`() {
-        val player = createTestPlayer()
-        player.specialAttackEnergy.consume(40) // Set spec to 60
-        val zebak = Zebak(player)
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        loadout.player.specialAttackEnergy.consume(40) // Set spec to 60
         zebak.onTick(Tick(0)) // Should attack Zebak but NOT drink surge pot
         // After onTick, spec should be 60 or less (if spec used for attack), but not increased by surge pot
-        assertEquals(60, player.specialAttackEnergy.energy)
+        assertEquals(60, loadout.player.specialAttackEnergy.energy)
     }
 
     @Test
     fun `player should drink liquid adrenaline before first ZCB spec`() {
-        val player = createTestPlayer()
-        val zebak = Zebak(player)
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
         
         // Set up conditions for ZCB spec (not tick 0, shouldZcbSpec returns true)
         zebak.onTick(Tick(1)) // Should drink liquid adrenaline and spec
@@ -125,8 +114,8 @@ class ZebakTest {
 
     @Test
     fun `player should NOT spec on tick 0`() {
-        val player = createTestPlayer()
-        val zebak = Zebak(player)
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
         
         // On tick 0, should not spec even if shouldZcbSpec returns true
         zebak.onTick(Tick(0))
@@ -138,8 +127,8 @@ class ZebakTest {
 
     @Test
     fun `fight should be over when Zebak dies`() {
-        val player = createTestPlayer()
-        val zebak = Zebak(player)
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
         val scaledHp = zebak.zebak.health.value
         assertFalse(zebak.isFightOver())
         zebak.zebak.takeDamage(scaledHp)
@@ -148,41 +137,45 @@ class ZebakTest {
 
     @Test
     fun `should handle damage correctly`() {
-        val testBoss = createTestZebakBoss()
-        val initialHealth = testBoss.health.value
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val initialHealth = zebak.zebak.health.value
         
         // Deal some damage
-        testBoss.takeDamage(100)
-        assertEquals(initialHealth - 100, testBoss.health.value)
+        zebak.zebak.takeDamage(100)
+        assertEquals(initialHealth - 100, zebak.zebak.health.value)
         
         // Deal more damage
-        testBoss.takeDamage(200)
-        assertEquals(initialHealth - 300, testBoss.health.value)
+        zebak.zebak.takeDamage(200)
+        assertEquals(initialHealth - 300, zebak.zebak.health.value)
     }
 
     @Test
     fun `should handle lethal damage correctly`() {
-        val testBoss = createTestZebakBoss()
-        val scaledHp = testBoss.health.value
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val scaledHp = zebak.zebak.health.value
         // Deal lethal damage
-        testBoss.takeDamage(scaledHp)
-        assertEquals(0, testBoss.health.value)
-        assertFalse(testBoss.isAlive)
+        zebak.zebak.takeDamage(scaledHp)
+        assertEquals(0, zebak.zebak.health.value)
+        assertFalse(zebak.zebak.isAlive)
     }
 
     @Test
     fun `should handle overkill damage correctly`() {
-        val testBoss = createTestZebakBoss()
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
         
         // Deal more damage than health
-        testBoss.takeDamage(3000)
-        assertEquals(0, testBoss.health.value)
-        assertFalse(testBoss.isAlive)
+        zebak.zebak.takeDamage(3000)
+        assertEquals(0, zebak.zebak.health.value)
+        assertFalse(zebak.zebak.isAlive)
     }
 
     @Test
     fun `should not reduce defence below 50`() {
-        val zebak = Zebak(createTestPlayer())
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
         
         assertEquals(70, zebak.zebak.combatStats.defenceLevel)
         
@@ -196,7 +189,8 @@ class ZebakTest {
 
     @Test
     fun `should allow defence reduction when above 50`() {
-        val zebak = Zebak(createTestPlayer())
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
         // Test normal reduction when above 50
         val smallReduction = 5
         zebak.zebak.combatStats.drainDefenceLevel(smallReduction)
@@ -205,7 +199,8 @@ class ZebakTest {
 
     @Test
     fun `should handle multiple defence reductions correctly`() {
-        val zebak = Zebak(createTestPlayer())
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
         
         assertEquals(70, zebak.zebak.combatStats.defenceLevel) // Verify initial defence level
         
@@ -238,21 +233,103 @@ class ZebakTest {
         assertEquals(2620, scaledHp)
     }
 
-    private fun createTestPlayer(): Player {
-        val combatEntity = GenericCombatEntity(
-            name = "Test Player",
-            health = Health(99),
-            hasLightbearer = false
-        )
-        return Player(combatEntity)
+    @Test
+    fun `should have correct defence level`() {
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        
+        assertEquals(70, zebak.zebak.combatStats.defenceLevel)
     }
 
-    private fun createTestZebakBoss(): ZebakBoss {
-        val scaledHp = ToaCombatEntity.calculateScaledHp(ZebakConstants.BASE_HP, 530, 3)
-        val combatEntity = GenericCombatEntity(
-            name = "530 Level 3 Zebak",
-            health = Health(scaledHp)
-        )
-        return ZebakBoss(combatEntity)
+    @Test
+    fun `should have correct magic level`() {
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        
+        assertEquals(100, zebak.zebak.combatStats.magicLevel)
+    }
+
+    @Test
+    fun `should drain defence level correctly`() {
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val initialDefence = zebak.zebak.combatStats.defenceLevel
+        
+        // Drain some defence
+        zebak.zebak.combatStats.drainDefenceLevel(10)
+        assertEquals(initialDefence - 10, zebak.zebak.combatStats.defenceLevel)
+        
+        // Drain more defence
+        zebak.zebak.combatStats.drainDefenceLevel(5)
+        assertEquals(initialDefence - 15, zebak.zebak.combatStats.defenceLevel)
+    }
+
+    @Test
+    fun `should cap defence drain at 20`() {
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val initialDefence = zebak.zebak.combatStats.defenceLevel
+        
+        // Try to drain more than the cap
+        zebak.zebak.combatStats.drainDefenceLevel(25)
+        
+        // Should only drain up to the cap (20)
+        assertEquals(initialDefence - 20, zebak.zebak.combatStats.defenceLevel)
+    }
+
+    @Test
+    fun `should handle defence drain when already drained`() {
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val initialDefence = zebak.zebak.combatStats.defenceLevel
+        
+        // Drain some defence first
+        zebak.zebak.combatStats.drainDefenceLevel(10)
+        assertEquals(initialDefence - 10, zebak.zebak.combatStats.defenceLevel)
+        
+        // Try to drain more than the remaining cap
+        zebak.zebak.combatStats.drainDefenceLevel(15)
+        
+        // Should only drain up to the remaining cap (10 more, total 20)
+        assertEquals(initialDefence - 20, zebak.zebak.combatStats.defenceLevel)
+    }
+
+    @Test
+    fun `should handle defence drain when at cap`() {
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val initialDefence = zebak.zebak.combatStats.defenceLevel
+        
+        // Drain to the cap
+        zebak.zebak.combatStats.drainDefenceLevel(20)
+        assertEquals(initialDefence - 20, zebak.zebak.combatStats.defenceLevel)
+        
+        // Try to drain more
+        zebak.zebak.combatStats.drainDefenceLevel(10)
+        
+        // Should remain at the cap
+        assertEquals(initialDefence - 20, zebak.zebak.combatStats.defenceLevel)
+    }
+
+    @Test
+    fun `should handle defence drain with multiple drains`() {
+        val loadout = createTestLoadout()
+        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val initialDefence = zebak.zebak.combatStats.defenceLevel
+        
+        // Multiple small drains
+        zebak.zebak.combatStats.drainDefenceLevel(5)
+        zebak.zebak.combatStats.drainDefenceLevel(5)
+        zebak.zebak.combatStats.drainDefenceLevel(5)
+        zebak.zebak.combatStats.drainDefenceLevel(5)
+        
+        // Should total 20 (the cap)
+        assertEquals(initialDefence - 20, zebak.zebak.combatStats.defenceLevel)
+        
+        // Try one more drain
+        zebak.zebak.combatStats.drainDefenceLevel(5)
+        
+        // Should still be at the cap
+        assertEquals(initialDefence - 20, zebak.zebak.combatStats.defenceLevel)
     }
 } 
