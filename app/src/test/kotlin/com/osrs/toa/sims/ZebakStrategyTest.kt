@@ -174,10 +174,10 @@ class ZebakStrategyTest {
     }
 
     @Test
-    fun `should create Zebak with custom strategy`() {
+    fun `should create Zebak with conditional spec strategy`() {
         val loadout = createTestLoadout()
-        val strategy = TestStrategy()
-        val zebak = Zebak.create(loadout, strategy, invocationLevel = 530, pathLevel = 3)
+        val strategy = ConditionalSpecStrategy(true)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -187,17 +187,17 @@ class ZebakStrategyTest {
     fun `should create Zebak with no spec strategy`() {
         val loadout = createTestLoadout()
         val strategy = NoSpecStrategy()
-        val zebak = Zebak.create(loadout, strategy, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
     }
 
     @Test
-    fun `should create Zebak with conditional spec strategy`() {
+    fun `should create Zebak with test strategy`() {
         val loadout = createTestLoadout()
-        val strategy = ConditionalSpecStrategy(true)
-        val zebak = Zebak.create(loadout, strategy, invocationLevel = 530, pathLevel = 3)
+        val strategy = TestStrategy()
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -266,17 +266,7 @@ class ZebakStrategyTest {
     fun `should create Zebak with custom strategy and different parameters`() {
         val loadout = createTestLoadout()
         val strategy = TestStrategy()
-        val zebak = Zebak.create(loadout, strategy, invocationLevel = 500, pathLevel = 2)
-        
-        assertNotNull(zebak)
-        assertFalse(zebak.isFightOver())
-    }
-
-    @Test
-    fun `should create Zebak with no spec strategy and different parameters`() {
-        val loadout = createTestLoadout()
-        val strategy = NoSpecStrategy()
-        val zebak = Zebak.create(loadout, strategy, invocationLevel = 500, pathLevel = 2)
+        val zebak = Zebak.create(loadout, invocationLevel = 500, pathLevel = 2)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -286,16 +276,27 @@ class ZebakStrategyTest {
     fun `should create Zebak with conditional spec strategy and different parameters`() {
         val loadout = createTestLoadout()
         val strategy = ConditionalSpecStrategy(true)
-        val zebak = Zebak.create(loadout, strategy, invocationLevel = 500, pathLevel = 2)
+        val zebak = Zebak.create(loadout, invocationLevel = 500, pathLevel = 2)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
     }
 
     @Test
-    fun `should create Zebak with default strategy and different parameters`() {
+    fun `should create Zebak with no spec strategy and different parameters`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak.create(loadout, invocationLevel = 500, pathLevel = 2) // No custom strategy provided
+        val strategy = NoSpecStrategy()
+        val zebak = Zebak.create(loadout, invocationLevel = 500, pathLevel = 2)
+        
+        assertNotNull(zebak)
+        assertFalse(zebak.isFightOver())
+    }
+
+    @Test
+    fun `should create Zebak with test strategy and different parameters`() {
+        val loadout = createTestLoadout()
+        val strategy = TestStrategy()
+        val zebak = Zebak.create(loadout, invocationLevel = 500, pathLevel = 2)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())

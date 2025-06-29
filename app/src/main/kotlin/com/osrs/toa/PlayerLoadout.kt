@@ -126,5 +126,5 @@ class ZebakLoadoutWithCustomStrategy(
     override val mainWeapon: Weapon = Weapons.Zebak6WayTwistedBow,
     private val customStrategy: SpecStrategy
 ) : PlayerLoadout {
-    override val strategy = ZebakMainFightStrategy(Zebak.create(this, customStrategy, invocationLevel = 530, pathLevel = 3).zebak)
+    override val strategy = customStrategy
 } 

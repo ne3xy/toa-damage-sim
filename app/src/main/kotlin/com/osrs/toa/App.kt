@@ -5,40 +5,104 @@ package com.osrs.toa
 
 import com.osrs.toa.actors.GenericCombatEntity
 import com.osrs.toa.actors.Player
-import com.osrs.toa.sims.Akkha
-import com.osrs.toa.sims.AkkhaMainFightStrategy
+import com.osrs.toa.actors.ToaCombatEntity
+import com.osrs.toa.actors.DefaultCombatStats
+import com.osrs.toa.actors.DefenceDrainCappedCombatStats
 import com.osrs.toa.sims.Zebak
+import com.osrs.toa.sims.ZebakBoss
 import com.osrs.toa.sims.ZebakMainFightStrategy
+import com.osrs.toa.sims.ZebakConstants
 import com.osrs.toa.weapons.Weapons
-import com.osrs.toa.weapons.Weapon
 
 fun main() {
-    var totalLength = 0;
-    val iterations = 1
-    for (i in 1..iterations) {
-        val player = Player(
-            GenericCombatEntity(
-                health = Health(99),
-                name = "Player",
-                hasLightbearer = true
-            )
-        )
-        
-        val loadout = object : PlayerLoadout {
-            override val player = player
-            override val mainWeapon = Weapons.Zebak6WayTwistedBow
-            override val strategy = AkkhaMainFightStrategy(Akkha(this, invocationLevel = 530, pathLevel = 3).akkha)
-        }
-        
-        val monster = Akkha(loadout, invocationLevel = 530, pathLevel = 3)
-        val simulator = CombatSimulator(player, monster)
-        val fightLength = simulator.runSimulation()
-        // Print final status
-        println("\nFinal Status:")
-        println("fight lasted ${fightLength.value} ticks")
-        totalLength += fightLength.value
-    }
-    val avgLength = totalLength/iterations
-    println("Average fight length over $iterations iterations: $avgLength")
+    val iterations = 100000
+    
+    // Simulate with Lightbearer
+    val lightbearerResults = simulateZebakFights(
+        iterations = iterations,
+        hasLightbearer = true,
+        description = "with lightbearer"
+    )
+    
+    // Simulate without Lightbearer
+    val noLightbearerResults = simulateZebakFights(
+        iterations = iterations,
+        hasLightbearer = false,
+        description = "without lightbearer"
+    )
+    
+    // Print results
+    println("Average fight length vs zebak with lightbearer over $iterations iterations: ${lightbearerResults.averageTicks}")
+    println("Average fight length vs zebak without lightbearer over $iterations iterations: ${noLightbearerResults.averageTicks}")
+}
 
+private data class SimulationResults(
+    val totalTicks: Int,
+    val iterations: Int,
+    val averageTicks: Int
+)
+
+private fun simulateZebakFights(
+    iterations: Int,
+    hasLightbearer: Boolean,
+    description: String
+): SimulationResults {
+    var totalTicks = 0
+    
+    repeat(iterations) { iteration ->
+        val player = createPlayer(hasLightbearer)
+        val zebakBoss = createZebakBoss()
+        val loadout = createLoadout(player, zebakBoss)
+        val monster = Zebak(loadout, zebakBoss)
+        val simulator = CombatSimulator(player, monster)
+        
+        val fightLength = simulator.runSimulation()
+        totalTicks += fightLength.value
+        
+        // Print final status for first few iterations
+        if (iteration < 3) {
+            println("\nFinal Status:")
+            println("fight lasted ${fightLength.value} ticks")
+        }
+    }
+    
+    return SimulationResults(
+        totalTicks = totalTicks,
+        iterations = iterations,
+        averageTicks = totalTicks / iterations
+    )
+}
+
+private fun createPlayer(hasLightbearer: Boolean): Player {
+    return Player(
+        GenericCombatEntity(
+            health = Health(99),
+            name = "Player",
+            hasLightbearer = hasLightbearer
+        )
+    )
+}
+
+private fun createZebakBoss(): ZebakBoss {
+    return ZebakBoss(ToaCombatEntity(
+        name = "Zebak",
+        baseHp = ZebakConstants.BASE_HP,
+        invocationLevel = 500,
+        pathLevel = 2,
+        baseCombatStats = DefenceDrainCappedCombatStats(DefaultCombatStats(
+            defenceLevel = 70,
+            magicLevel = 100,
+            meleeSlashDefenceBonus = 160,
+            rangedDefenceBonus = 110,
+            magicDefenceBonus = 200
+        ), drainCap = 20)
+    ))
+}
+
+private fun createLoadout(player: Player, zebakBoss: ZebakBoss): PlayerLoadout {
+    return object : PlayerLoadout {
+        override val player = player
+        override val mainWeapon = Weapons.Zebak6WayTwistedBow
+        override val strategy = ZebakMainFightStrategy(zebakBoss)
+    }
 }

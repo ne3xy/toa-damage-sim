@@ -14,6 +14,7 @@ import com.osrs.toa.weapons.Weapon
 import com.osrs.toa.weapons.SpecWeapon
 import com.osrs.toa.weapons.SpecStrategy
 import com.osrs.toa.PlayerLoadout
+import com.osrs.toa.sims.BossFight
 import kotlin.math.max
 import com.osrs.toa.actors.ToaCombatEntity
 
@@ -23,14 +24,13 @@ object ZebakConstants {
 
 class Zebak(
     private val loadout: PlayerLoadout,
-    specStrategy: SpecStrategy? = null,
     private val zebakBoss: ZebakBoss
 ): BossFight {
     private val defenceReductionThreshold = 13
     private val healthThreshold = 0.5 // 50% health
     
     // Use provided strategy or default to ZebakMainFightStrategy
-    private val specStrategy = specStrategy ?: ZebakMainFightStrategy(zebakBoss)
+    private val specStrategy = loadout.strategy
     
     // Capture initial values for comparison
     private val initialDefence = zebakBoss.combatStats.defenceLevel
@@ -57,7 +57,6 @@ class Zebak(
     companion object {
         fun create(
             loadout: PlayerLoadout,
-            specStrategy: SpecStrategy? = null,
             invocationLevel: Int,
             pathLevel: Int
         ): Zebak {
@@ -70,16 +69,15 @@ class Zebak(
                 magicDefenceBonus = 200
             )
             
-            // Calculate scaled HP based on invocation and path level
-            val scaledHp = ToaCombatEntity.calculateScaledHp(ZebakConstants.BASE_HP, invocationLevel, pathLevel)
-            
-            val zebakBoss = ZebakBoss(GenericCombatEntity(
+            val zebakBoss = ZebakBoss(ToaCombatEntity(
                 name = "$invocationLevel Level $pathLevel Zebak",
-                health = Health(scaledHp),
-                combatStats = DefenceDrainCappedCombatStats(ToaMonsterCombatStats(zebakBaseStats, invocationLevel = invocationLevel), drainCap = 20)
+                baseHp = ZebakConstants.BASE_HP,
+                invocationLevel = invocationLevel,
+                pathLevel = pathLevel,
+                baseCombatStats = DefenceDrainCappedCombatStats(ToaMonsterCombatStats(zebakBaseStats, invocationLevel = invocationLevel), drainCap = 20)
             ))
             
-            return Zebak(loadout, specStrategy, zebakBoss)
+            return Zebak(loadout, zebakBoss)
         }
     }
 }
@@ -88,18 +86,21 @@ class ZebakMainFightStrategy(private val zebak: ZebakBoss) : SpecStrategy {
     // Capture initial values for comparison
     private val initialDefence = zebak.combatStats.defenceLevel
     private val initialHealth = zebak.health.value
+    
+    // Cache thresholds to avoid recalculation
+    private val defenceReductionThreshold = 13
+    private val healthThreshold = 0.5
+    
     override fun selectWeapons(tick: Tick, mainWeapon: Weapon): Triple<Weapon, SpecWeapon?, Boolean> {
         val normalWeapon = mainWeapon
         
         val shouldUseBgs = shouldUseBgs()
         val shouldUseZcb = zebak.shouldZcbSpec()
         
-        val specWeapon = if (shouldUseBgs) {
-            Weapons.BandosGodsword
-        } else if (shouldUseZcb) {
-            Weapons.ZaryteCrossbow
-        } else {
-            null
+        val specWeapon = when {
+            shouldUseBgs -> Weapons.BandosGodsword
+            shouldUseZcb -> Weapons.ZaryteCrossbow
+            else -> null
         }
         
         val shouldSpec = tick.value != 0 && (shouldUseBgs || shouldUseZcb)
@@ -108,12 +109,6 @@ class ZebakMainFightStrategy(private val zebak: ZebakBoss) : SpecStrategy {
     }
     
     private fun shouldUseBgs(): Boolean {
-        // Strategy-specific parameters
-        val defenceReductionThreshold = 13
-        val healthThreshold = 0.5
-        val initialDefence = initialDefence
-        val initialHealth = initialHealth
-        
         // Don't use BGS if we've reduced defence by at least defenceReductionThreshold
         val currentDefence = zebak.combatStats.defenceLevel
         val defenceReduced = initialDefence - currentDefence
@@ -123,11 +118,7 @@ class ZebakMainFightStrategy(private val zebak: ZebakBoss) : SpecStrategy {
         
         // Don't use BGS if health is below threshold
         val healthPercentage = zebak.health.value.toDouble() / initialHealth.toDouble()
-        if (healthPercentage <= healthThreshold) {
-            return false
-        }
-        
-        return true
+        return healthPercentage > healthThreshold
     }
 }
 

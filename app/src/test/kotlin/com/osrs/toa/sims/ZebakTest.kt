@@ -368,7 +368,7 @@ class ZebakTest {
     fun `should create Zebak with custom strategy`() {
         val loadout = createTestLoadout()
         val strategy = TestStrategy()
-        val zebak = Zebak.create(loadout, strategy, invocationLevel = 150, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 150, pathLevel = 3)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -493,7 +493,7 @@ class ZebakTest {
     @Test
     fun `should handle null strategy`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak.create(loadout, null, invocationLevel = 150, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 150, pathLevel = 3)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
