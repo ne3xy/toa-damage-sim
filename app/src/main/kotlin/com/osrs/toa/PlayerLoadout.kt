@@ -58,7 +58,7 @@ object PlayerLoadoutFactory {
         return object : PlayerLoadout {
             override val player = player
             override val mainWeapon = mainWeapon
-            override val strategy = ZebakMainFightStrategy(Zebak(this, invocationLevel = 530, pathLevel = 3).zebak)
+            override val strategy = ZebakMainFightStrategy(Zebak.create(this, invocationLevel = 530, pathLevel = 3).zebak)
         }
     }
     
@@ -94,7 +94,7 @@ object PlayerLoadoutFactory {
         return object : PlayerLoadout {
             override val player = player
             override val mainWeapon = mainWeapon
-            override val strategy = ZebakMainFightStrategy(Zebak(this, invocationLevel = 530, pathLevel = 3).zebak)
+            override val strategy = ZebakMainFightStrategy(Zebak.create(this, invocationLevel = 530, pathLevel = 3).zebak)
         }
     }
 }
@@ -118,7 +118,7 @@ class ZebakLoadout(
     override val player: Player,
     override val mainWeapon: Weapon = Weapons.Zebak6WayTwistedBow
 ) : PlayerLoadout {
-    override val strategy = ZebakMainFightStrategy(Zebak(this, invocationLevel = 530, pathLevel = 3).zebak)
+    override val strategy = ZebakMainFightStrategy(Zebak.create(this, invocationLevel = 530, pathLevel = 3).zebak)
 }
 
 class ZebakLoadoutWithCustomStrategy(
@@ -126,5 +126,5 @@ class ZebakLoadoutWithCustomStrategy(
     override val mainWeapon: Weapon = Weapons.Zebak6WayTwistedBow,
     private val customStrategy: SpecStrategy
 ) : PlayerLoadout {
-    override val strategy = ZebakMainFightStrategy(Zebak(this, customStrategy, invocationLevel = 530, pathLevel = 3).zebak)
+    override val strategy = ZebakMainFightStrategy(Zebak.create(this, customStrategy, invocationLevel = 530, pathLevel = 3).zebak)
 } 

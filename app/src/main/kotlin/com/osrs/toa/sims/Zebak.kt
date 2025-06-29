@@ -24,39 +24,20 @@ object ZebakConstants {
 class Zebak(
     private val loadout: PlayerLoadout,
     specStrategy: SpecStrategy? = null,
-    private val invocationLevel: Int,
-    private val pathLevel: Int
+    private val zebakBoss: ZebakBoss
 ): BossFight {
     private val defenceReductionThreshold = 13
     private val healthThreshold = 0.5 // 50% health
     
-    // Move zebakBaseStats here so it's fresh for each Zebak
-    private val zebakBaseStats = DefaultCombatStats(
-        defenceLevel = 70, // Level 3 Zebak defence level
-        magicLevel = 100, // Level 3 Zebak magic level
-        meleeSlashDefenceBonus = 160,
-        rangedDefenceBonus = 110,
-        magicDefenceBonus = 200
-    )
-    
-    // Calculate scaled HP based on invocation and path level
-    private val scaledHp = ToaCombatEntity.calculateScaledHp(ZebakConstants.BASE_HP, invocationLevel, pathLevel)
-    
-    val zebak = ZebakBoss(GenericCombatEntity(
-        name = "$invocationLevel Level $pathLevel Zebak",
-        health = Health(scaledHp),
-        combatStats = DefenceDrainCappedCombatStats(ToaMonsterCombatStats(zebakBaseStats, invocationLevel = invocationLevel), drainCap = 20)
-    ))
-    
     // Use provided strategy or default to ZebakMainFightStrategy
-    private val specStrategy = specStrategy ?: ZebakMainFightStrategy(zebak)
+    private val specStrategy = specStrategy ?: ZebakMainFightStrategy(zebakBoss)
     
     // Capture initial values for comparison
-    private val initialDefence = zebak.combatStats.defenceLevel
-    private val initialHealth = zebak.health.value
+    private val initialDefence = zebakBoss.combatStats.defenceLevel
+    private val initialHealth = zebakBoss.health.value
 
     override fun onTick(tick: Tick) {
-        if (zebak.isAttackable(tick)) {
+        if (zebakBoss.isAttackable(tick)) {
             if (loadout.player.specialAttackEnergy.energy < 50) {
                 loadout.player.drinkSurgePot(tick)
             }
@@ -64,11 +45,43 @@ class Zebak(
             if (shouldSpec && tick.value != 0) {
                 loadout.player.drinkLiquidAdrenaline(tick)
             }
-            loadout.player.attack(tick, zebak, normalWeapon, specWeapon, shouldSpec)
+            loadout.player.attack(tick, zebakBoss, normalWeapon, specWeapon, shouldSpec)
         }
     }
 
-    override fun isFightOver() = !zebak.isAlive
+    override fun isFightOver() = !zebakBoss.isAlive
+    
+    // Expose the zebakBoss for external access
+    val zebak: ZebakBoss = zebakBoss
+    
+    companion object {
+        fun create(
+            loadout: PlayerLoadout,
+            specStrategy: SpecStrategy? = null,
+            invocationLevel: Int,
+            pathLevel: Int
+        ): Zebak {
+            // Move zebakBaseStats here so it's fresh for each Zebak
+            val zebakBaseStats = DefaultCombatStats(
+                defenceLevel = 70, // Level 3 Zebak defence level
+                magicLevel = 100, // Level 3 Zebak magic level
+                meleeSlashDefenceBonus = 160,
+                rangedDefenceBonus = 110,
+                magicDefenceBonus = 200
+            )
+            
+            // Calculate scaled HP based on invocation and path level
+            val scaledHp = ToaCombatEntity.calculateScaledHp(ZebakConstants.BASE_HP, invocationLevel, pathLevel)
+            
+            val zebakBoss = ZebakBoss(GenericCombatEntity(
+                name = "$invocationLevel Level $pathLevel Zebak",
+                health = Health(scaledHp),
+                combatStats = DefenceDrainCappedCombatStats(ToaMonsterCombatStats(zebakBaseStats, invocationLevel = invocationLevel), drainCap = 20)
+            ))
+            
+            return Zebak(loadout, specStrategy, zebakBoss)
+        }
+    }
 }
 
 class ZebakMainFightStrategy(private val zebak: ZebakBoss) : SpecStrategy {

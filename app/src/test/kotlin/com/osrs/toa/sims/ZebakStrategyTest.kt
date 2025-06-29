@@ -27,14 +27,14 @@ class ZebakStrategyTest {
         return object : PlayerLoadout {
             override val player = player
             override val mainWeapon = Weapons.Zebak6WayTwistedBow
-            override val strategy = ZebakMainFightStrategy(Zebak(this, invocationLevel = 530, pathLevel = 3).zebak)
+            override val strategy = ZebakMainFightStrategy(Zebak.create(this, invocationLevel = 530, pathLevel = 3).zebak)
         }
     }
 
     @Test
     fun `ZebakMainFightStrategy should use BGS and Twisted Bow`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         val strategy = ZebakMainFightStrategy(zebak.zebak)
         
         val (normalWeapon, specWeapon, shouldSpec) = strategy.selectWeapons(Tick(1), Weapons.Zebak6WayTwistedBow)
@@ -47,7 +47,7 @@ class ZebakStrategyTest {
     @Test
     fun `ZebakMainFightStrategy should switch to ZCB after defence reduction threshold`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         val strategy = ZebakMainFightStrategy(zebak.zebak)
         
         // Reduce defence by more than threshold (13)
@@ -64,7 +64,7 @@ class ZebakStrategyTest {
     @Test
     fun `ZebakMainFightStrategy should switch to ZCB when health is below 50%`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         val strategy = ZebakMainFightStrategy(zebak.zebak)
         
         // Damage Zebak to below 50% health
@@ -81,7 +81,7 @@ class ZebakStrategyTest {
     @Test
     fun `ZebakMainFightStrategy should use BGS when both conditions are met`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         val strategy = ZebakMainFightStrategy(zebak.zebak)
         
         // Verify initial conditions: high health and no defence reduction
@@ -98,7 +98,7 @@ class ZebakStrategyTest {
     @Test
     fun `ZebakMainFightStrategy should not spec on tick 0`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         val strategy = ZebakMainFightStrategy(zebak.zebak)
         
         val (normalWeapon, specWeapon, shouldSpec) = strategy.selectWeapons(Tick(0), Weapons.Zebak6WayTwistedBow)
@@ -111,7 +111,7 @@ class ZebakStrategyTest {
     @Test
     fun `ZebakMainFightStrategy should use BGS when defence reduction is below threshold`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         val strategy = ZebakMainFightStrategy(zebak.zebak)
         
         // Reduce defence by less than threshold (13)
@@ -128,7 +128,7 @@ class ZebakStrategyTest {
     @Test
     fun `ZebakMainFightStrategy should use BGS when health is above 50%`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         val strategy = ZebakMainFightStrategy(zebak.zebak)
         
         // Damage Zebak but keep health above 50%
@@ -145,7 +145,7 @@ class ZebakStrategyTest {
     @Test
     fun `ZebakMainFightStrategy should handle edge case of exactly 50% health`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         val strategy = ZebakMainFightStrategy(zebak.zebak)
         val scaledHp = zebak.zebak.health.value
         // Damage Zebak to exactly 50% health
@@ -159,7 +159,7 @@ class ZebakStrategyTest {
     @Test
     fun `ZebakMainFightStrategy should handle edge case of exactly 13 defence reduction`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3)
         val strategy = ZebakMainFightStrategy(zebak.zebak)
         
         // Reduce defence by exactly 13 (threshold)
@@ -177,7 +177,7 @@ class ZebakStrategyTest {
     fun `should create Zebak with custom strategy`() {
         val loadout = createTestLoadout()
         val strategy = TestStrategy()
-        val zebak = Zebak(loadout, strategy, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, strategy, invocationLevel = 530, pathLevel = 3)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -187,7 +187,7 @@ class ZebakStrategyTest {
     fun `should create Zebak with no spec strategy`() {
         val loadout = createTestLoadout()
         val strategy = NoSpecStrategy()
-        val zebak = Zebak(loadout, strategy, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, strategy, invocationLevel = 530, pathLevel = 3)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -197,7 +197,7 @@ class ZebakStrategyTest {
     fun `should create Zebak with conditional spec strategy`() {
         val loadout = createTestLoadout()
         val strategy = ConditionalSpecStrategy(true)
-        val zebak = Zebak(loadout, strategy, invocationLevel = 530, pathLevel = 3)
+        val zebak = Zebak.create(loadout, strategy, invocationLevel = 530, pathLevel = 3)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -256,7 +256,7 @@ class ZebakStrategyTest {
     @Test
     fun `should create Zebak with default strategy`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 530, pathLevel = 3) // No custom strategy provided
+        val zebak = Zebak.create(loadout, invocationLevel = 530, pathLevel = 3) // No custom strategy provided
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -266,7 +266,7 @@ class ZebakStrategyTest {
     fun `should create Zebak with custom strategy and different parameters`() {
         val loadout = createTestLoadout()
         val strategy = TestStrategy()
-        val zebak = Zebak(loadout, strategy, invocationLevel = 500, pathLevel = 2)
+        val zebak = Zebak.create(loadout, strategy, invocationLevel = 500, pathLevel = 2)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -276,7 +276,7 @@ class ZebakStrategyTest {
     fun `should create Zebak with no spec strategy and different parameters`() {
         val loadout = createTestLoadout()
         val strategy = NoSpecStrategy()
-        val zebak = Zebak(loadout, strategy, invocationLevel = 500, pathLevel = 2)
+        val zebak = Zebak.create(loadout, strategy, invocationLevel = 500, pathLevel = 2)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -286,7 +286,7 @@ class ZebakStrategyTest {
     fun `should create Zebak with conditional spec strategy and different parameters`() {
         val loadout = createTestLoadout()
         val strategy = ConditionalSpecStrategy(true)
-        val zebak = Zebak(loadout, strategy, invocationLevel = 500, pathLevel = 2)
+        val zebak = Zebak.create(loadout, strategy, invocationLevel = 500, pathLevel = 2)
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
@@ -295,7 +295,7 @@ class ZebakStrategyTest {
     @Test
     fun `should create Zebak with default strategy and different parameters`() {
         val loadout = createTestLoadout()
-        val zebak = Zebak(loadout, invocationLevel = 500, pathLevel = 2) // No custom strategy provided
+        val zebak = Zebak.create(loadout, invocationLevel = 500, pathLevel = 2) // No custom strategy provided
         
         assertNotNull(zebak)
         assertFalse(zebak.isFightOver())
