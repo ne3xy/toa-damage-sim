@@ -21,6 +21,7 @@ class Akkha(
                 defenceLevel = 80, // Level 3 Akkha defence level
                 magicLevel = 100, // Level 3 Akkha magic level
                 rangedDefenceBonus = 60,
+                rangedHeavyDefenceBonus = 60,
                 magicDefenceBonus = 10
             ), invocationLevel = 530)
     ))
@@ -99,6 +100,7 @@ class AkkhaBoss(private val combatEntity: CombatEntity): CombatEntity by combatE
                                 defenceLevel = 30, // Shadow defence level
                                 magicLevel = 100, // Shadow magic level
                                 rangedDefenceBonus = 60,
+                                rangedHeavyDefenceBonus = 60,
                                 magicDefenceBonus = 10
                             ), invocationLevel = 530)
                     ),

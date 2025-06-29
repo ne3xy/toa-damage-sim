@@ -16,6 +16,7 @@ private val zebakBaseStats = DefaultCombatStats(
     magicLevel = 100, // Level 3 Zebak magic level
     meleeSlashDefenceBonus = 160,
     rangedDefenceBonus = 110,
+    rangedHeavyDefenceBonus = 110,
     magicDefenceBonus = 200
 )
 
