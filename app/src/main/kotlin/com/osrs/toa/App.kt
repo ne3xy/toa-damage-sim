@@ -11,7 +11,7 @@ import com.osrs.toa.weapons.Weapons
 
 fun main() {
     var totalLength = 0;
-    val iterations = 1000
+    val iterations = 1
     for (i in 1..iterations) {
         val player = Player(
             GenericCombatEntity(

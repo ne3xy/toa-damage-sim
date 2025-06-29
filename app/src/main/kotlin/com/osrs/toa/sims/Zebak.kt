@@ -14,9 +14,14 @@ import com.osrs.toa.weapons.Weapon
 import com.osrs.toa.weapons.SpecWeapon
 import com.osrs.toa.weapons.SpecStrategy
 import kotlin.math.max
+import com.osrs.toa.BaseHp
+import com.osrs.toa.actors.ToaCombatEntity
 
 class Zebak(
-    private val player: Player
+    private val player: Player,
+    specStrategy: SpecStrategy? = null,
+    private val invocationLevel: Int = 530,
+    private val pathLevel: Int = 3
 ): BossFight {
     private val defenceReductionThreshold = 13
     private val healthThreshold = 0.5 // 50% health
@@ -30,14 +35,21 @@ class Zebak(
         magicDefenceBonus = 200
     )
     
-    //hardcode 530 level3
+    // Calculate scaled HP based on invocation and path level
+    private val scaledHp = ToaCombatEntity.calculateScaledHp(BaseHp.ZEBAK, invocationLevel, pathLevel)
+    
     val zebak = ZebakBoss(GenericCombatEntity(
-        name = "530 Level 3 Zebak",
-        health = Health(2130),
-        combatStats = DefenceDrainCappedCombatStats(ToaMonsterCombatStats(zebakBaseStats, invocationLevel = 530), drainCap = 20)
+        name = "$invocationLevel Level $pathLevel Zebak",
+        health = Health(scaledHp),
+        combatStats = DefenceDrainCappedCombatStats(ToaMonsterCombatStats(zebakBaseStats, invocationLevel = invocationLevel), drainCap = 20)
     ))
     
-    private val specStrategy = ZebakMainFightStrategy(zebak)
+    // Use provided strategy or default to ZebakMainFightStrategy
+    private val specStrategy = specStrategy ?: ZebakMainFightStrategy(zebak)
+    
+    // Capture initial values for comparison
+    private val initialDefence = zebak.combatStats.defenceLevel
+    private val initialHealth = zebak.health.value
 
     override fun onTick(tick: Tick) {
         if (zebak.isAttackable(tick)) {
@@ -47,7 +59,8 @@ class Zebak(
             
             val (normalWeapon, specWeapon, shouldSpec) = specStrategy.selectWeapons(tick)
             
-            if (tick.value == 5) {
+            // Drink liquid adrenaline before first ZCB spec
+            if (shouldSpec && tick.value != 0) {
                 player.drinkLiquidAdrenaline(tick)
             }
             

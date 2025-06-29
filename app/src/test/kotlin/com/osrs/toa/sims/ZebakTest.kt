@@ -8,6 +8,8 @@ import com.osrs.toa.actors.Player
 import com.osrs.toa.actors.DefaultCombatStats
 import com.osrs.toa.actors.AttackStyle
 import com.osrs.toa.weapons.Weapons
+import com.osrs.toa.actors.ToaCombatEntity
+import com.osrs.toa.BaseHp
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
@@ -41,10 +43,9 @@ class ZebakTest {
     @Test
     fun `should not be attackable when dead`() {
         val testBoss = createTestZebakBoss()
-        
+        val scaledHp = testBoss.health.value
         // Kill the boss
-        testBoss.takeDamage(2130)
-        
+        testBoss.takeDamage(scaledHp)
         assertFalse(testBoss.isAttackable(Tick(0)))
         assertFalse(testBoss.isAttackable(Tick(10)))
     }
@@ -52,7 +53,7 @@ class ZebakTest {
     @Test
     fun `should have correct initial health`() {
         val testBoss = createTestZebakBoss()
-        
+        // Hardcoded expected HP for 530 invocation, path 3
         assertEquals(2130, testBoss.health.value)
         assertEquals("530 Level 3 Zebak", testBoss.name)
     }
@@ -60,41 +61,33 @@ class ZebakTest {
     @Test
     fun `should recommend ZCB spec when health is above 500`() {
         val testBoss = createTestZebakBoss()
-        
-        // Boss has high health (2130 > 500)
         assertTrue(testBoss.shouldZcbSpec())
     }
 
     @Test
     fun `should not recommend ZCB spec when health is below 500`() {
         val testBoss = createTestZebakBoss()
-        
-        // Damage boss to below 500 health
-        testBoss.takeDamage(1700) // 2130 - 1700 = 430
+        val scaledHp = testBoss.health.value
+        testBoss.takeDamage(scaledHp - 430)
         assertEquals(430, testBoss.health.value)
-        
         assertFalse(testBoss.shouldZcbSpec())
     }
 
     @Test
     fun `should not recommend ZCB spec when health is exactly 500`() {
         val testBoss = createTestZebakBoss()
-        
-        // Damage boss to exactly 500 health
-        testBoss.takeDamage(1630) // 2130 - 1630 = 500
+        val scaledHp = testBoss.health.value
+        testBoss.takeDamage(scaledHp - 500)
         assertEquals(500, testBoss.health.value)
-        
         assertFalse(testBoss.shouldZcbSpec())
     }
 
     @Test
     fun `should recommend ZCB spec when health is just above 500`() {
         val testBoss = createTestZebakBoss()
-        
-        // Damage boss to just above 500 health
-        testBoss.takeDamage(1629) // 2130 - 1629 = 501
+        val scaledHp = testBoss.health.value
+        testBoss.takeDamage(scaledHp - 501)
         assertEquals(501, testBoss.health.value)
-        
         assertTrue(testBoss.shouldZcbSpec())
     }
 
@@ -148,14 +141,9 @@ class ZebakTest {
     fun `fight should be over when Zebak dies`() {
         val player = createTestPlayer()
         val zebak = Zebak(player)
-        
-        // Initially fight is not over
+        val scaledHp = zebak.zebak.health.value
         assertFalse(zebak.isFightOver())
-        
-        // Kill Zebak
-        zebak.zebak.takeDamage(2130)
-        
-        // Now fight should be over
+        zebak.zebak.takeDamage(scaledHp)
         assertTrue(zebak.isFightOver())
     }
 
@@ -176,9 +164,9 @@ class ZebakTest {
     @Test
     fun `should handle lethal damage correctly`() {
         val testBoss = createTestZebakBoss()
-        
+        val scaledHp = testBoss.health.value
         // Deal lethal damage
-        testBoss.takeDamage(2130)
+        testBoss.takeDamage(scaledHp)
         assertEquals(0, testBoss.health.value)
         assertFalse(testBoss.isAlive)
     }
@@ -239,6 +227,18 @@ class ZebakTest {
         assertEquals(50, zebak.zebak.combatStats.defenceLevel)
     }
 
+    @Test
+    fun `should have correct health at 200 invocation path 1`() {
+        val scaledHp = ToaCombatEntity.calculateScaledHp(BaseHp.ZEBAK, 200, 1)
+        assertEquals(1130, scaledHp)
+    }
+
+    @Test
+    fun `should have correct health at 600 invocation path 6`() {
+        val scaledHp = ToaCombatEntity.calculateScaledHp(BaseHp.ZEBAK, 600, 6)
+        assertEquals(2620, scaledHp)
+    }
+
     private fun createTestPlayer(): Player {
         val combatEntity = GenericCombatEntity(
             name = "Test Player",
@@ -249,9 +249,10 @@ class ZebakTest {
     }
 
     private fun createTestZebakBoss(): ZebakBoss {
+        val scaledHp = ToaCombatEntity.calculateScaledHp(BaseHp.ZEBAK, 530, 3)
         val combatEntity = GenericCombatEntity(
             name = "530 Level 3 Zebak",
-            health = Health(2130)
+            health = Health(scaledHp)
         )
         return ZebakBoss(combatEntity)
     }

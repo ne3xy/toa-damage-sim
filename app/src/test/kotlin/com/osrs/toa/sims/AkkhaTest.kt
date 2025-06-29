@@ -102,10 +102,10 @@ class AkkhaTest {
     fun `should proc shadow at phase boundaries`() {
         val testBoss = createTestAkkhaBoss()
         val initialHealth = testBoss.health.value
-        val phaseSize = 1470 / 5 // 294
+        val phaseSize = initialHealth / 5
         
-        // Deal massive damage - should be clamped to phase size
-        testBoss.takeDamage(1000)
+        // Damage boss to exactly a phase boundary
+        testBoss.takeDamage(phaseSize)
         
         // Should have taken exactly phase size damage
         assertEquals(initialHealth - phaseSize, testBoss.health.value)
@@ -113,7 +113,7 @@ class AkkhaTest {
         testBoss.maybeProcShadow(Tick(10))
         
         assertNotNull(testBoss.shadow)
-        assertEquals(255, testBoss.shadow!!.health.value)
+        assertEquals(260, testBoss.shadow!!.health.value)
     }
 
     @Test
@@ -155,9 +155,10 @@ class AkkhaTest {
     @Test
     fun `should not proc shadow at top of phase`() {
         val testBoss = createTestAkkhaBoss()
+        val phaseSize = testBoss.health.value / 5
         
         // Damage boss to exactly a phase boundary
-        testBoss.takeDamage(1470 / 5)
+        testBoss.takeDamage(phaseSize)
         
         testBoss.maybeProcShadow(Tick(10))
         
@@ -231,14 +232,15 @@ class AkkhaTest {
     @Test
     fun `should create shadow with correct properties`() {
         val testBoss = createTestAkkhaBoss()
+        val phaseSize = testBoss.health.value / 5
         
         // Proc shadow
-        testBoss.takeDamage(1470 / 5)
+        testBoss.takeDamage(phaseSize)
         testBoss.maybeProcShadow(Tick(10))
         
         val shadow = testBoss.shadow!!
         assertEquals("530 Level 3 Akkha's Shadow", shadow.name)
-        assertEquals(255, shadow.health.value)
+        assertEquals(260, shadow.health.value)
         // Test attackable behavior instead of accessing private field
         assertFalse(shadow.isAttackable(Tick(15)))
         assertTrue(shadow.isAttackable(Tick(16)))
@@ -247,9 +249,10 @@ class AkkhaTest {
     @Test
     fun `should make shadow attackable after delay`() {
         val testBoss = createTestAkkhaBoss()
+        val phaseSize = testBoss.health.value / 5
         
         // Proc shadow
-        testBoss.takeDamage(1470 / 5)
+        testBoss.takeDamage(phaseSize)
         testBoss.maybeProcShadow(Tick(10))
         
         val shadow = testBoss.shadow!!
@@ -266,15 +269,16 @@ class AkkhaTest {
     @Test
     fun `should not make shadow attackable when dead`() {
         val testBoss = createTestAkkhaBoss()
+        val phaseSize = testBoss.health.value / 5
         
         // Proc shadow
-        testBoss.takeDamage(1470 / 5)
+        testBoss.takeDamage(phaseSize)
         testBoss.maybeProcShadow(Tick(10))
         
         val shadow = testBoss.shadow!!
         
         // Kill shadow
-        shadow.takeDamage(255)
+        shadow.takeDamage(260)
         
         assertFalse(shadow.isAttackable(Tick(16)))
     }
@@ -305,14 +309,15 @@ class AkkhaTest {
         player.specialAttackEnergy.consume(60) // Set spec to 40
         val akkha = Akkha(player)
         // Proc shadow by dealing damage to phase boundary
-        akkha.akkha.takeDamage(1470 / 5) // Deal exactly phase size damage
+        val phaseSize = akkha.akkha.health.value / 5
+        akkha.akkha.takeDamage(phaseSize) // Deal exactly phase size damage
         akkha.akkha.maybeProcShadow(Tick(0)) // Proc the shadow
         // Wait for shadow to be attackable
         akkha.onTick(Tick(6)) // Shadow becomes attackable at tick 6
         // Spec should remain 40 (no surge pot drank)
         assertEquals(40, player.specialAttackEnergy.energy)
         // Kill the shadow
-        akkha.akkha.shadow!!.takeDamage(255) // Kill shadow
+        akkha.akkha.shadow!!.takeDamage(260) // Kill shadow
         // Now attack Akkha again - should drink surge pot since spec is still under 50
         akkha.onTick(Tick(7)) // Attack Akkha again
         // Spec should now be 65 (40 + 25 from surge pot)

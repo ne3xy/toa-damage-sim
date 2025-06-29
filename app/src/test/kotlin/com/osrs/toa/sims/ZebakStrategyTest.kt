@@ -7,6 +7,8 @@ import com.osrs.toa.actors.Player
 import com.osrs.toa.weapons.Weapons
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import com.osrs.toa.actors.ToaCombatEntity
+import com.osrs.toa.BaseHp
 
 class ZebakStrategyTest {
 
@@ -156,12 +158,10 @@ class ZebakStrategyTest {
         val player = createTestPlayer()
         val zebak = Zebak(player)
         val strategy = ZebakMainFightStrategy(zebak.zebak)
-        
-        // Damage Zebak to exactly 50% health (2130 * 0.5 = 1065)
-        zebak.zebak.takeDamage(1065) // 2130 - 1065 = 1065 (exactly 50%)
-        
+        val scaledHp = zebak.zebak.health.value
+        // Damage Zebak to exactly 50% health
+        zebak.zebak.takeDamage(scaledHp / 2)
         val (normalWeapon, specWeapon, shouldSpec) = strategy.selectWeapons(Tick(1))
-        
         assertEquals(Weapons.Zebak6WayTwistedBow, normalWeapon)
         assertEquals(Weapons.ZaryteCrossbow, specWeapon) // Should use ZCB when health <= 50%
         assertTrue(shouldSpec)

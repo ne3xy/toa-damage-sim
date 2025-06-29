@@ -60,12 +60,22 @@ object Weapons {
         maxHit = 80
     )
 
-    val BandosGodsword: SpecWeapon = object: SpecWeapon, Weapon by BandosGodswordBaseWeapon {
+    private val LightbearerBandosGodswordBaseWeapon = NormalDamageBaseWeapon(
+        name = "Bandos Godsword",
+        attackSpeed = 6,
+        attackStyle = AttackStyle.MELEE_SLASH,
+        attackRoll = 39123, 
+        maxHit = 77
+    )
+
+    private fun BaseBandosGodsword(baseWeapon: Weapon): SpecWeapon = object: SpecWeapon, Weapon by baseWeapon {
         override val specialAttackCost = 50
         override fun attack(target: CombatEntity): Int {
-            val damage = BandosGodswordBaseWeapon.attack(target)
+            val damage = baseWeapon.attack(target)
             target.combatStats.drainDefenceLevel(damage)
             return damage
         }
     }
+    val BandosGodsword = BaseBandosGodsword(BandosGodswordBaseWeapon)
+    val LightbearerBandosGodsword = BaseBandosGodsword(LightbearerBandosGodswordBaseWeapon)
 }
