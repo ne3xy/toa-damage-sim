@@ -133,26 +133,6 @@ class AkkhaStrategyTest {
     }
 
     @Test
-    fun `Akkha should use custom strategy when provided`() {
-        val player = createTestPlayer()
-        
-        // Create a custom strategy that always returns different weapons
-        val customStrategy = object : SpecStrategy {
-            override fun selectWeapons(tick: Tick): Triple<Weapon, SpecWeapon?, Boolean> {
-                return Triple(Weapons.TumekensShadow, Weapons.BandosGodsword, true)
-            }
-        }
-        
-        val akkha = Akkha(player, customStrategy)
-        
-        // The custom strategy should be used instead of the default
-        akkha.onTick(Tick(1))
-        
-        // This should not throw an exception
-        assertTrue(true)
-    }
-
-    @Test
     fun `Akkha should use default strategy when no custom strategy provided`() {
         val player = createTestPlayer()
         val akkha = Akkha(player) // No custom strategy provided

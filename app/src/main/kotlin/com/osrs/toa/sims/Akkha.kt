@@ -15,8 +15,7 @@ import com.osrs.toa.weapons.SpecStrategy
 import kotlin.math.min
 
 class Akkha(
-        private val player: Player,
-        specStrategy: SpecStrategy? = null
+        private val player: Player
 ): BossFight {
     //hardcode 530 level3
     val akkha = AkkhaBoss(GenericCombatEntity(
@@ -31,8 +30,7 @@ class Akkha(
             ), invocationLevel = 530)
     ))
     
-    // Use provided strategy or default to AkkhaMainFightStrategy
-    private val specStrategy = specStrategy ?: AkkhaMainFightStrategy(akkha)
+    private val specStrategy = AkkhaMainFightStrategy(akkha)
 
     override fun onTick(tick: Tick) {
         if (akkha.isAttackable(tick)) {
@@ -43,7 +41,7 @@ class Akkha(
             val (normalWeapon, specWeapon, shouldSpec) = specStrategy.selectWeapons(tick)
             
             // Drink liquid adrenaline before first ZCB spec
-            if (shouldSpec && tick.value != 0) {
+            if (tick.value == 5) {
                 player.drinkLiquidAdrenaline(tick)
             }
             

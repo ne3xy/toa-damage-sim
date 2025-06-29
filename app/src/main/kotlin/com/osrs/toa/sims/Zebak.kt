@@ -47,8 +47,7 @@ class Zebak(
             
             val (normalWeapon, specWeapon, shouldSpec) = specStrategy.selectWeapons(tick)
             
-            // Drink liquid adrenaline before first ZCB spec
-            if (shouldSpec && tick.value != 0) {
+            if (tick.value == 5) {
                 player.drinkLiquidAdrenaline(tick)
             }
             
