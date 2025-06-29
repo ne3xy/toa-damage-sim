@@ -95,8 +95,12 @@ class ToaCombatEntity(
             }
             scaledHp = (scaledHp * pathMultiplier).toInt()
 
-            // Round to nearest 10
-            return ((scaledHp + 5) / 10) * 10
+            // Round to nearest 5 if below 300, else to nearest 10
+            return if (scaledHp < 300) {
+                ((scaledHp + 2) / 5) * 5
+            } else {
+                ((scaledHp + 5) / 10) * 10
+            }
         }
     }
 } 

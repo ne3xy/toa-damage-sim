@@ -113,7 +113,7 @@ class AkkhaTest {
         testBoss.maybeProcShadow(Tick(10))
         
         assertNotNull(testBoss.shadow)
-        assertEquals(260, testBoss.shadow!!.health.value)
+        assertEquals(255, testBoss.shadow!!.health.value)
     }
 
     @Test
@@ -240,7 +240,7 @@ class AkkhaTest {
         
         val shadow = testBoss.shadow!!
         assertEquals("530 Level 3 Akkha's Shadow", shadow.name)
-        assertEquals(260, shadow.health.value)
+        assertEquals( 255, shadow.health.value)
         // Test attackable behavior instead of accessing private field
         assertFalse(shadow.isAttackable(Tick(15)))
         assertTrue(shadow.isAttackable(Tick(16)))
@@ -322,6 +322,71 @@ class AkkhaTest {
         akkha.onTick(Tick(7)) // Attack Akkha again
         // Spec should now be 65 (40 + 25 from surge pot)
         assertEquals(65, player.specialAttackEnergy.energy)
+    }
+
+    @Test
+    fun `should have correct shadow HP at invocation 500 path level 0`() {
+        val player = createTestPlayer()
+        val akkha = Akkha(player, invocationLevel = 500, pathLevel = 0)
+        
+        // Proc shadow by dealing damage to phase boundary
+        val phaseSize = akkha.akkha.health.value / 5
+        akkha.akkha.takeDamage(phaseSize)
+        akkha.akkha.maybeProcShadow(Tick(0))
+        
+        assertEquals(210, akkha.akkha.shadow!!.health.value)
+    }
+
+    @Test
+    fun `should have correct shadow HP at invocation 500 path level 1`() {
+        val player = createTestPlayer()
+        val akkha = Akkha(player, invocationLevel = 500, pathLevel = 1)
+        
+        // Proc shadow by dealing damage to phase boundary
+        val phaseSize = akkha.akkha.health.value / 5
+        akkha.akkha.takeDamage(phaseSize)
+        akkha.akkha.maybeProcShadow(Tick(0))
+        
+        assertEquals(225, akkha.akkha.shadow!!.health.value)
+    }
+
+    @Test
+    fun `should have correct shadow HP at invocation 500 path level 2`() {
+        val player = createTestPlayer()
+        val akkha = Akkha(player, invocationLevel = 500, pathLevel = 2)
+        
+        // Proc shadow by dealing damage to phase boundary
+        val phaseSize = akkha.akkha.health.value / 5
+        akkha.akkha.takeDamage(phaseSize)
+        akkha.akkha.maybeProcShadow(Tick(0))
+        
+        assertEquals(235, akkha.akkha.shadow!!.health.value)
+    }
+
+    @Test
+    fun `should have correct shadow HP at invocation 500 path level 3`() {
+        val player = createTestPlayer()
+        val akkha = Akkha(player, invocationLevel = 500, pathLevel = 3)
+        
+        // Proc shadow by dealing damage to phase boundary
+        val phaseSize = akkha.akkha.health.value / 5
+        akkha.akkha.takeDamage(phaseSize)
+        akkha.akkha.maybeProcShadow(Tick(0))
+        
+        assertEquals(245, akkha.akkha.shadow!!.health.value)
+    }
+
+    @Test
+    fun `should have correct shadow HP at invocation 500 path level 4`() {
+        val player = createTestPlayer()
+        val akkha = Akkha(player, invocationLevel = 500, pathLevel = 4)
+        
+        // Proc shadow by dealing damage to phase boundary
+        val phaseSize = akkha.akkha.health.value / 5
+        akkha.akkha.takeDamage(phaseSize)
+        akkha.akkha.maybeProcShadow(Tick(0))
+        
+        assertEquals(260, akkha.akkha.shadow!!.health.value)
     }
 
     private fun createTestPlayer(): Player {
