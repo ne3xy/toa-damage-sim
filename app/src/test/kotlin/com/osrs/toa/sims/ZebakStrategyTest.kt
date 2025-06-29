@@ -8,7 +8,6 @@ import com.osrs.toa.weapons.Weapons
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import com.osrs.toa.actors.ToaCombatEntity
-import com.osrs.toa.BaseHp
 
 class ZebakStrategyTest {
 

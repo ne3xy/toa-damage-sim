@@ -9,7 +9,7 @@ import com.osrs.toa.actors.DefaultCombatStats
 import com.osrs.toa.actors.AttackStyle
 import com.osrs.toa.weapons.Weapons
 import com.osrs.toa.actors.ToaCombatEntity
-import com.osrs.toa.BaseHp
+import com.osrs.toa.sims.ZebakConstants
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
@@ -53,7 +53,6 @@ class ZebakTest {
     @Test
     fun `should have correct initial health`() {
         val testBoss = createTestZebakBoss()
-        // Hardcoded expected HP for 530 invocation, path 3
         assertEquals(2130, testBoss.health.value)
         assertEquals("530 Level 3 Zebak", testBoss.name)
     }
@@ -229,13 +228,13 @@ class ZebakTest {
 
     @Test
     fun `should have correct health at 200 invocation path 1`() {
-        val scaledHp = ToaCombatEntity.calculateScaledHp(BaseHp.ZEBAK, 200, 1)
+        val scaledHp = ToaCombatEntity.calculateScaledHp(ZebakConstants.BASE_HP, 200, 1)
         assertEquals(1130, scaledHp)
     }
 
     @Test
     fun `should have correct health at 600 invocation path 6`() {
-        val scaledHp = ToaCombatEntity.calculateScaledHp(BaseHp.ZEBAK, 600, 6)
+        val scaledHp = ToaCombatEntity.calculateScaledHp(ZebakConstants.BASE_HP, 600, 6)
         assertEquals(2620, scaledHp)
     }
 
@@ -249,7 +248,7 @@ class ZebakTest {
     }
 
     private fun createTestZebakBoss(): ZebakBoss {
-        val scaledHp = ToaCombatEntity.calculateScaledHp(BaseHp.ZEBAK, 530, 3)
+        val scaledHp = ToaCombatEntity.calculateScaledHp(ZebakConstants.BASE_HP, 530, 3)
         val combatEntity = GenericCombatEntity(
             name = "530 Level 3 Zebak",
             health = Health(scaledHp)

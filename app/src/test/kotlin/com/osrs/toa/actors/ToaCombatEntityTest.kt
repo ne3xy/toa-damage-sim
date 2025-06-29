@@ -1,6 +1,7 @@
 package com.osrs.toa.actors
 
-import com.osrs.toa.BaseHp
+import com.osrs.toa.sims.AkkhaConstants
+import com.osrs.toa.sims.ZebakConstants
 import com.osrs.toa.Tick
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -13,7 +14,7 @@ class ToaCombatEntityTest {
         val baseCombatStats = DefaultCombatStats(defenceLevel = 100, magicLevel = 50)
         val entity = ToaCombatEntity(
             name = "Test Boss",
-            baseHp = BaseHp.ZEBAK,
+            baseHp = ZebakConstants.BASE_HP,
             invocationLevel = 150,
             pathLevel = 2,
             baseCombatStats = baseCombatStats
@@ -21,12 +22,12 @@ class ToaCombatEntityTest {
         
         // Check basic properties
         assertEquals("Test Boss", entity.name)
-        assertEquals(BaseHp.ZEBAK, entity.baseHp)
+        assertEquals(ZebakConstants.BASE_HP, entity.baseHp)
         assertEquals(150, entity.invocationLevel)
         assertEquals(2, entity.pathLevel)
         
         // Check scaled HP (should be higher than base due to invocation and path scaling)
-        assertTrue(entity.scaledHp > BaseHp.ZEBAK)
+        assertTrue(entity.scaledHp > ZebakConstants.BASE_HP)
         assertEquals(entity.scaledHp, entity.health.value)
         
         // Check combat stats are wrapped in ToaMonsterCombatStats

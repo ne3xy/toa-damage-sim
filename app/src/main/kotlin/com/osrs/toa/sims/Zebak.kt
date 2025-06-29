@@ -14,8 +14,11 @@ import com.osrs.toa.weapons.Weapon
 import com.osrs.toa.weapons.SpecWeapon
 import com.osrs.toa.weapons.SpecStrategy
 import kotlin.math.max
-import com.osrs.toa.BaseHp
 import com.osrs.toa.actors.ToaCombatEntity
+
+object ZebakConstants {
+    const val BASE_HP = 580
+}
 
 class Zebak(
     private val player: Player,
@@ -36,7 +39,7 @@ class Zebak(
     )
     
     // Calculate scaled HP based on invocation and path level
-    private val scaledHp = ToaCombatEntity.calculateScaledHp(BaseHp.ZEBAK, invocationLevel, pathLevel)
+    private val scaledHp = ToaCombatEntity.calculateScaledHp(ZebakConstants.BASE_HP, invocationLevel, pathLevel)
     
     val zebak = ZebakBoss(GenericCombatEntity(
         name = "$invocationLevel Level $pathLevel Zebak",

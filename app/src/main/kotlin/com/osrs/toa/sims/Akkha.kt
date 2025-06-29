@@ -13,8 +13,12 @@ import com.osrs.toa.weapons.Weapon
 import com.osrs.toa.weapons.SpecWeapon
 import com.osrs.toa.weapons.SpecStrategy
 import kotlin.math.min
-import com.osrs.toa.BaseHp
 import com.osrs.toa.actors.ToaCombatEntity
+
+object AkkhaConstants {
+    const val BASE_HP = 400
+    const val SHADOW_BASE_HP = 70
+}
 
 class Akkha(
         private val player: Player,
@@ -23,7 +27,7 @@ class Akkha(
         private val pathLevel: Int = 3
 ): BossFight {
     // Calculate scaled HP based on invocation and path level
-    private val scaledHp = ToaCombatEntity.calculateScaledHp(BaseHp.AKKHA, invocationLevel, pathLevel)
+    private val scaledHp = ToaCombatEntity.calculateScaledHp(AkkhaConstants.BASE_HP, invocationLevel, pathLevel)
     
     val akkha = AkkhaBoss(
         GenericCombatEntity(
@@ -126,7 +130,7 @@ class AkkhaBoss(
 
     fun maybeProcShadow(tick: Tick) {
         if (isAlive && health.value % phaseSize == 0 && !hpIsTopOfThePhase()) {
-            val scaledShadowHp = ToaCombatEntity.calculateScaledHp(BaseHp.AKKHA_SHADOW, invocationLevel, pathLevel)
+            val scaledShadowHp = ToaCombatEntity.calculateScaledHp(AkkhaConstants.SHADOW_BASE_HP, invocationLevel, pathLevel)
             shadow = AkkhaShadow(
                     GenericCombatEntity(
                             name = "$invocationLevel Level $pathLevel Akkha's Shadow",
