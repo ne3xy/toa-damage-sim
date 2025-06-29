@@ -15,7 +15,7 @@ import com.osrs.toa.sims.ZebakConstants
 import com.osrs.toa.weapons.Weapons
 
 fun main() {
-    val iterations = 100000
+    val iterations = 1000
     
     // Simulate with Lightbearer
     val lightbearerResults = simulateZebakFights(
