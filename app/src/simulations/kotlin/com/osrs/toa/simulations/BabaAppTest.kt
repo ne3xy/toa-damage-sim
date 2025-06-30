@@ -1,0 +1,127 @@
+package com.osrs.toa.simulations
+
+import com.osrs.toa.*
+import com.osrs.toa.actors.*
+import com.osrs.toa.sims.Baba
+import com.osrs.toa.sims.BabaBoss
+import com.osrs.toa.sims.BabaConstants
+import com.osrs.toa.sims.BabaMainFightStrategy
+import com.osrs.toa.weapons.Weapons
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
+
+class BabaAppTest {
+    
+    @Test
+    fun `test Baba with Lightbearer and surge pots`() {
+        val results = simulateBabaFights(
+            iterations = 1000,
+            hasLightbearer = true,
+            useSurgePots = true
+        )
+        println("Baba Lightbearer + Surge Pots: ${results.averageTicks} ticks")
+        assertTrue(results.averageTicks > 0)
+    }
+    
+    @Test
+    fun `test Baba with Lightbearer, no surge pots`() {
+        val results = simulateBabaFights(
+            iterations = 1000,
+            hasLightbearer = true,
+            useSurgePots = false
+        )
+        println("Baba Lightbearer + No Surge Pots: ${results.averageTicks} ticks")
+        assertTrue(results.averageTicks > 0)
+    }
+    
+    @Test
+    fun `test Baba with Ultor and surge pots`() {
+        val results = simulateBabaFights(
+            iterations = 1000,
+            hasLightbearer = false,
+            useSurgePots = true
+        )
+        println("Baba Ultor + Surge Pots: ${results.averageTicks} ticks")
+        assertTrue(results.averageTicks > 0)
+    }
+    
+    @Test
+    fun `test Baba with Ultor, no surge pots`() {
+        val results = simulateBabaFights(
+            iterations = 1000,
+            hasLightbearer = false,
+            useSurgePots = false
+        )
+        println("Baba Ultor + No Surge Pots: ${results.averageTicks} ticks")
+        assertTrue(results.averageTicks > 0)
+    }
+    
+    private data class SimulationResults(
+        val totalTicks: Int,
+        val iterations: Int,
+        val averageTicks: Int
+    )
+    
+    private fun simulateBabaFights(
+        iterations: Int,
+        hasLightbearer: Boolean,
+        useSurgePots: Boolean
+    ): SimulationResults {
+        var totalTicks = 0
+        
+        repeat(iterations) { iteration ->
+            val player = createPlayer(hasLightbearer, useSurgePots, false) // Baba doesn't use liquid adrenaline
+            val babaBoss = createBabaBoss()
+            val loadout = createBabaLoadout(player, babaBoss)
+            val monster = Baba(loadout, babaBoss)
+            val simulator = CombatSimulator(player, monster)
+            
+            val fightLength = simulator.runSimulation()
+            totalTicks += fightLength.value
+        }
+        
+        return SimulationResults(
+            totalTicks = totalTicks,
+            iterations = iterations,
+            averageTicks = totalTicks / iterations
+        )
+    }
+    
+    private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, useLiquidAdrenaline: Boolean): Player {
+        return Player(
+            GenericCombatEntity(
+                health = Health(99),
+                name = "Player",
+                hasLightbearer = hasLightbearer
+            ),
+            useSurgePots = useSurgePots,
+            useLiquidAdrenaline = useLiquidAdrenaline
+        )
+    }
+    
+    private fun createBabaBoss(): BabaBoss {
+        return BabaBoss(ToaCombatEntity(
+            name = "Baba",
+            baseHp = BabaConstants.BASE_HP,
+            invocationLevel = 500,
+            pathLevel = 0,
+            baseCombatStats = DefenceDrainCappedCombatStats(DefaultCombatStats(
+                defenceLevel = 70,
+                magicLevel = 100,
+                meleeSlashDefenceBonus = 160,
+                rangedDefenceBonus = 110,
+                magicDefenceBonus = 200
+            ), drainCap = 20)
+        ))
+    }
+    
+    private fun createBabaLoadout(player: Player, babaBoss: BabaBoss): PlayerLoadout {
+        val weapon = if (player.hasLightbearer) Weapons.LightbearerFang else Weapons.UltorFang
+        
+        return object : PlayerLoadout {
+            override val player = player
+            override val mainWeapon = weapon
+            override val strategy = BabaMainFightStrategy(babaBoss)
+        }
+    }
+} 

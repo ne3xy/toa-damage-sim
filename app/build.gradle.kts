@@ -19,15 +19,34 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    val simulations by creating {
+        kotlin.srcDir("src/simulations/kotlin")
+        resources.srcDir("src/simulations/resources")
+        compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
 dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
     
-    // Testing dependencies
+    // Testing dependencies - using consistent JUnit 5 versions
     testImplementation("io.mockk:mockk:1.14.3")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.12.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
+    testImplementation("org.junit.platform:junit-platform-engine:1.9.3")
+    testImplementation("org.junit.platform:junit-platform-launcher:1.9.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    
+    // Simulations test dependencies - using consistent JUnit 5 versions
+    add("simulationsImplementation", "io.mockk:mockk:1.14.3")
+    add("simulationsImplementation", "org.junit.jupiter:junit-jupiter:5.9.3")
+    add("simulationsImplementation", "org.junit.jupiter:junit-jupiter-api:5.9.3")
+    add("simulationsImplementation", "org.junit.platform:junit-platform-engine:1.9.3")
+    add("simulationsImplementation", "org.junit.platform:junit-platform-launcher:1.9.3")
+    add("simulationsRuntimeOnly", "org.junit.jupiter:junit-jupiter-engine:5.9.3")
 }
 
 testing {
@@ -35,7 +54,7 @@ testing {
         // Configure the built-in test suite
         val test by getting(JvmTestSuite::class) {
             // Use JUnit Jupiter test framework
-            useJUnitJupiter("5.12.1")
+            useJUnitJupiter("5.10.2")
         }
     }
 }
@@ -50,4 +69,23 @@ java {
 application {
     // Define the main class for the application.
     mainClass = "com.osrs.toa.AppKt"
+}
+
+tasks.register<Test>("simulationsTest") {
+    description = "Runs the simulation tests."
+    group = "verification"
+    
+    testClassesDirs = sourceSets["simulations"].output.classesDirs
+    classpath = sourceSets["simulations"].runtimeClasspath
+    
+    useJUnitPlatform()
+    
+    // Explicitly set the test source directory
+    testLogging {
+        showStandardStreams = true
+        events("passed", "skipped", "failed")
+    }
+    
+    // Ensure we're only running tests from the simulations source set
+    include("**/simulations/**")
 }

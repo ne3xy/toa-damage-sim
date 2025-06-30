@@ -24,63 +24,95 @@ import com.osrs.toa.sims.AkkhaBoss
 import com.osrs.toa.sims.AkkhaMainFightStrategy
 import com.osrs.toa.sims.AkkhaConstants
 
-fun main() {
-    val iterations = 1
+fun main(args: Array<String>) {
+    // Parse command line arguments
+    val boss = args.getOrNull(0)?.lowercase()
+    val iterations = args.getOrNull(1)?.toIntOrNull() ?: 1000
     
-   // Simulate Zebak with Lightbearer
-   val zebakLightbearerResults = simulateZebakFights(
-       iterations = iterations,
-       hasLightbearer = true,
-       description = "with lightbearer"
-   )
+    println("Running simulations for $boss with $iterations iterations")
+    println("Usage: <boss> <iterations>")
+    println("Boss options: akkha, zebak, baba")
+    println("Example: akkha 1000")
+    println()
+    
+    when (boss) {
+        "akkha" -> runAkkhaSimulations(iterations)
+        "zebak" -> runZebakSimulations(iterations)
+        "baba" -> runBabaSimulations(iterations)
+        else -> {
+            println("Unknown boss: $boss")
+            println("Available bosses: akkha, zebak, baba")
+        }
+    }
+}
 
-   // Simulate Zebak without Lightbearer
-   val zebakNoLightbearerResults = simulateZebakFights(
-       iterations = iterations,
-       hasLightbearer = false,
-       description = "without lightbearer"
-   )
+private fun runAkkhaSimulations(iterations: Int) {
+    println("=== AKKHA SIMULATIONS ===")
+    
+    // Lightbearer scenarios
+    val lightbearerWithSurge = simulateAkkhaFights(iterations, true, true, false)
+    val lightbearerNoSurge = simulateAkkhaFights(iterations, true, false, false)
+    val lightbearerWithAdrenaline = simulateAkkhaFights(iterations, true, true, true)
+    val lightbearerNoSurgeWithAdrenaline = simulateAkkhaFights(iterations, true, false, true)
+    
+    // Magus Ring scenarios
+    val magusWithSurge = simulateAkkhaFights(iterations, false, true, false)
+    val magusNoSurge = simulateAkkhaFights(iterations, false, false, false)
+    val magusWithAdrenaline = simulateAkkhaFights(iterations, false, true, true)
+    val magusNoSurgeWithAdrenaline = simulateAkkhaFights(iterations, false, false, true)
+    
+    println("Lightbearer + Surge Pots: ${lightbearerWithSurge.averageTicks} ticks")
+    println("Lightbearer + No Surge Pots: ${lightbearerNoSurge.averageTicks} ticks")
+    println("Lightbearer + Surge Pots + Liquid Adrenaline: ${lightbearerWithAdrenaline.averageTicks} ticks")
+    println("Lightbearer + No Surge Pots + Liquid Adrenaline: ${lightbearerNoSurgeWithAdrenaline.averageTicks} ticks")
+    println()
+    println("Magus Ring + Surge Pots: ${magusWithSurge.averageTicks} ticks")
+    println("Magus Ring + No Surge Pots: ${magusNoSurge.averageTicks} ticks")
+    println("Magus Ring + Surge Pots + Liquid Adrenaline: ${magusWithAdrenaline.averageTicks} ticks")
+    println("Magus Ring + No Surge Pots + Liquid Adrenaline: ${magusNoSurgeWithAdrenaline.averageTicks} ticks")
+}
 
-   // Simulate Baba with Lightbearer
-   val babaLightbearerResults = simulateBabaFights(
-       iterations = iterations,
-       hasLightbearer = true,
-       description = "with lightbearer"
-   )
+private fun runZebakSimulations(iterations: Int) {
+    println("=== ZEBAK SIMULATIONS ===")
     
-    // Simulate Baba with Ultor
-    val babaUltorResults = simulateBabaFights(
-        iterations = iterations,
-        hasLightbearer = false,
-        description = "with ultor"
-    )
+    // Lightbearer scenarios
+    val lightbearerWithSurge = simulateZebakFights(iterations, true, true, false)
+    val lightbearerNoSurge = simulateZebakFights(iterations, true, false, false)
+    val lightbearerWithAdrenaline = simulateZebakFights(iterations, true, true, true)
+    val lightbearerNoSurgeWithAdrenaline = simulateZebakFights(iterations, true, false, true)
     
-   // Simulate Akkha with Lightbearer
-   val akkhaLightbearerResults = simulateAkkhaFights(
-       iterations = iterations,
-       hasLightbearer = true,
-       description = "with lightbearer"
-   )
+    // No Lightbearer scenarios
+    val noLightbearerWithSurge = simulateZebakFights(iterations, false, true, false)
+    val noLightbearerNoSurge = simulateZebakFights(iterations, false, false, false)
+    val noLightbearerWithAdrenaline = simulateZebakFights(iterations, false, true, true)
+    val noLightbearerNoSurgeWithAdrenaline = simulateZebakFights(iterations, false, false, true)
+    
+    println("Lightbearer + Surge Pots: ${lightbearerWithSurge.averageTicks} ticks")
+    println("Lightbearer + No Surge Pots: ${lightbearerNoSurge.averageTicks} ticks")
+    println("Lightbearer + Surge Pots + Liquid Adrenaline: ${lightbearerWithAdrenaline.averageTicks} ticks")
+    println("Lightbearer + No Surge Pots + Liquid Adrenaline: ${lightbearerNoSurgeWithAdrenaline.averageTicks} ticks")
+    println()
+    println("No Lightbearer + Surge Pots: ${noLightbearerWithSurge.averageTicks} ticks")
+    println("No Lightbearer + No Surge Pots: ${noLightbearerNoSurge.averageTicks} ticks")
+    println("No Lightbearer + Surge Pots + Liquid Adrenaline: ${noLightbearerWithAdrenaline.averageTicks} ticks")
+    println("No Lightbearer + No Surge Pots + Liquid Adrenaline: ${noLightbearerNoSurgeWithAdrenaline.averageTicks} ticks")
+}
 
-   // Simulate Akkha with Magus Ring
-   val akkhaMagusResults = simulateAkkhaFights(
-       iterations = iterations,
-       hasLightbearer = false,
-       description = "with magus ring"
-   )
+private fun runBabaSimulations(iterations: Int) {
+    println("=== BABA SIMULATIONS ===")
     
-   // Print results
-   println("=== ZEBAK RESULTS ===")
-   println("Average fight length vs zebak with lightbearer over $iterations iterations: ${zebakLightbearerResults.averageTicks}")
-   println("Average fight length vs zebak without lightbearer over $iterations iterations: ${zebakNoLightbearerResults.averageTicks}")
+    // Lightbearer scenarios
+    val lightbearerWithSurge = simulateBabaFights(iterations, true, true)
+    val lightbearerNoSurge = simulateBabaFights(iterations, true, false)
     
-    println("\n=== BABA RESULTS ===")
-   println("Average fight length vs baba with lightbearer over $iterations iterations: ${babaLightbearerResults.averageTicks}")
-    println("Average fight length vs baba with ultor over $iterations iterations: ${babaUltorResults.averageTicks}")
+    // Ultor scenarios
+    val ultorWithSurge = simulateBabaFights(iterations, false, true)
+    val ultorNoSurge = simulateBabaFights(iterations, false, false)
     
-   println("\n=== AKKHA RESULTS ===")
-   println("Average fight length vs akkha with lightbearer over $iterations iterations: ${akkhaLightbearerResults.averageTicks}")
-   println("Average fight length vs akkha with magus ring over $iterations iterations: ${akkhaMagusResults.averageTicks}")
+    println("Lightbearer + Surge Pots: ${lightbearerWithSurge.averageTicks} ticks")
+    println("Lightbearer + No Surge Pots: ${lightbearerNoSurge.averageTicks} ticks")
+    println("Ultor + Surge Pots: ${ultorWithSurge.averageTicks} ticks")
+    println("Ultor + No Surge Pots: ${ultorNoSurge.averageTicks} ticks")
 }
 
 private data class SimulationResults(
@@ -92,12 +124,13 @@ private data class SimulationResults(
 private fun simulateZebakFights(
     iterations: Int,
     hasLightbearer: Boolean,
-    description: String
+    useSurgePots: Boolean,
+    useLiquidAdrenaline: Boolean
 ): SimulationResults {
     var totalTicks = 0
     
     repeat(iterations) { iteration ->
-        val player = createPlayer(hasLightbearer)
+        val player = createPlayer(hasLightbearer, useSurgePots, useLiquidAdrenaline)
         val zebakBoss = createZebakBoss()
         val loadout = createLoadout(player, zebakBoss)
         val monster = Zebak(loadout, zebakBoss)
@@ -105,12 +138,6 @@ private fun simulateZebakFights(
         
         val fightLength = simulator.runSimulation()
         totalTicks += fightLength.value
-        
-        // Print final status for first few iterations
-        if (iteration < 3) {
-            println("\nFinal Status:")
-            println("fight lasted ${fightLength.value} ticks")
-        }
     }
     
     return SimulationResults(
@@ -123,12 +150,12 @@ private fun simulateZebakFights(
 private fun simulateBabaFights(
     iterations: Int,
     hasLightbearer: Boolean,
-    description: String
+    useSurgePots: Boolean
 ): SimulationResults {
     var totalTicks = 0
     
     repeat(iterations) { iteration ->
-        val player = createPlayer(hasLightbearer)
+        val player = createPlayer(hasLightbearer, useSurgePots, false) // Baba doesn't use liquid adrenaline
         val babaBoss = createBabaBoss()
         val loadout = createBabaLoadout(player, babaBoss)
         val monster = Baba(loadout, babaBoss)
@@ -136,12 +163,6 @@ private fun simulateBabaFights(
         
         val fightLength = simulator.runSimulation()
         totalTicks += fightLength.value
-        
-        // Print final status for first few iterations
-        if (iteration < 3) {
-            println("\nFinal Status:")
-            println("fight lasted ${fightLength.value} ticks")
-        }
     }
     
     return SimulationResults(
@@ -154,24 +175,19 @@ private fun simulateBabaFights(
 private fun simulateAkkhaFights(
     iterations: Int,
     hasLightbearer: Boolean,
-    description: String
+    useSurgePots: Boolean,
+    useLiquidAdrenaline: Boolean
 ): SimulationResults {
     var totalTicks = 0
     
     repeat(iterations) { iteration ->
-        val player = createPlayer(hasLightbearer)
+        val player = createPlayer(hasLightbearer, useSurgePots, useLiquidAdrenaline)
         val loadout = createAkkhaLoadout(player)
         val monster = Akkha(loadout, invocationLevel = 500, pathLevel = 2)
         val simulator = CombatSimulator(player, monster)
         
         val fightLength = simulator.runSimulation()
         totalTicks += fightLength.value
-        
-        // Print final status for first few iterations
-        if (iteration < 3) {
-            println("\nFinal Status:")
-            println("fight lasted ${fightLength.value} ticks")
-        }
     }
     
     return SimulationResults(
@@ -181,13 +197,15 @@ private fun simulateAkkhaFights(
     )
 }
 
-private fun createPlayer(hasLightbearer: Boolean): Player {
+private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, useLiquidAdrenaline: Boolean): Player {
     return Player(
         GenericCombatEntity(
             health = Health(99),
             name = "Player",
             hasLightbearer = hasLightbearer
-        )
+        ),
+        useSurgePots = useSurgePots,
+        useLiquidAdrenaline = useLiquidAdrenaline
     )
 }
 
@@ -231,7 +249,7 @@ private fun createBabaBoss(): BabaBoss {
     ))
 }
 
-private fun createBabaLoadout(player: Player, babaBoss: BabaBoss,): PlayerLoadout {
+private fun createBabaLoadout(player: Player, babaBoss: BabaBoss): PlayerLoadout {
     val weapon = if (player.hasLightbearer) Weapons.LightbearerFang else Weapons.UltorFang
     
     return object : PlayerLoadout {

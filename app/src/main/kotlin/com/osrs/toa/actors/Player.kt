@@ -5,7 +5,9 @@ import com.osrs.toa.weapons.Weapon
 import com.osrs.toa.weapons.SpecWeapon
 
 class Player(
-    combatEntity: GenericCombatEntity
+    combatEntity: GenericCombatEntity,
+    private val useSurgePots: Boolean = true,
+    private val useLiquidAdrenaline: Boolean = true
 ) : CombatEntity by combatEntity {
     
     private var lastSurgePotTick: Tick? = null
@@ -33,6 +35,11 @@ class Player(
     }
     
     fun drinkSurgePot(currentTick: Tick): Boolean {
+        // If surge pots are disabled, return false immediately
+        if (!useSurgePots) {
+            return false
+        }
+        
         // Cannot drink if at full spec
         if (specialAttackEnergy.energy >= 100) {
             println("Cannot drink surge potion: already at full special attack energy")
@@ -53,6 +60,11 @@ class Player(
     }
     
     fun drinkLiquidAdrenaline(currentTick: Tick): Boolean {
+        // If liquid adrenaline is disabled, return false immediately
+        if (!useLiquidAdrenaline) {
+            return false
+        }
+        
         // Can only drink once ever (startTick is null if never drunk)
         if (liquidAdrenalineStartTick != null) {
             return false

@@ -9,6 +9,6 @@ class AppTest {
     
     @Test
     fun testCombatSimulatorCreation() {
-        main()
+        main(emptyArray())
     }
 }
