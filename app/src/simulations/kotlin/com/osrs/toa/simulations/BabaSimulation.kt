@@ -21,6 +21,8 @@ class BabaAppTest {
             useSurgePots = true
         )
         println("Baba Lightbearer + Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -32,6 +34,8 @@ class BabaAppTest {
             useSurgePots = false
         )
         println("Baba Lightbearer + No Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -43,6 +47,8 @@ class BabaAppTest {
             useSurgePots = true
         )
         println("Baba Ultor + Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -54,13 +60,17 @@ class BabaAppTest {
             useSurgePots = false
         )
         println("Baba Ultor + No Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
     private data class SimulationResults(
         val totalTicks: Int,
         val iterations: Int,
-        val averageTicks: Int
+        val averageTicks: Int,
+        val specCounts: Map<String, Int>,
+        val averageSpecsPerWeapon: Map<String, Double>
     )
     
     private fun simulateBabaFights(
@@ -69,9 +79,10 @@ class BabaAppTest {
         useSurgePots: Boolean
     ): SimulationResults {
         var totalTicks = 0
+        val specTracker = SpecTracker()
         
         repeat(iterations) { iteration ->
-            val player = createPlayer(hasLightbearer, useSurgePots, false) // Baba doesn't use liquid adrenaline
+            val player = createPlayer(hasLightbearer, useSurgePots, specTracker)
             val babaBoss = createBabaBoss()
             val loadout = createBabaLoadout(player, babaBoss)
             val monster = Baba(loadout, babaBoss)
@@ -84,11 +95,13 @@ class BabaAppTest {
         return SimulationResults(
             totalTicks = totalTicks,
             iterations = iterations,
-            averageTicks = totalTicks / iterations
+            averageTicks = totalTicks / iterations,
+            specCounts = specTracker.getAllSpecCounts(),
+            averageSpecsPerWeapon = specTracker.getAverageSpecsPerWeapon(iterations)
         )
     }
     
-    private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, useLiquidAdrenaline: Boolean): Player {
+    private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, specTracker: SpecTracker): Player {
         return Player(
             GenericCombatEntity(
                 health = Health(99),
@@ -96,7 +109,8 @@ class BabaAppTest {
                 hasLightbearer = hasLightbearer
             ),
             useSurgePots = useSurgePots,
-            useLiquidAdrenaline = useLiquidAdrenaline
+            useLiquidAdrenaline = false, // Baba doesn't use liquid adrenaline
+            specTracker = specTracker
         )
     }
     

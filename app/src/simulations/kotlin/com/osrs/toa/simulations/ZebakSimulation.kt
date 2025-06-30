@@ -22,6 +22,8 @@ class ZebakAppTest {
             useLiquidAdrenaline = false
         )
         println("Zebak Lightbearer + Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -34,6 +36,8 @@ class ZebakAppTest {
             useLiquidAdrenaline = false
         )
         println("Zebak Lightbearer + No Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -46,6 +50,8 @@ class ZebakAppTest {
             useLiquidAdrenaline = true
         )
         println("Zebak Lightbearer + Surge Pots + Liquid Adrenaline: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -58,6 +64,8 @@ class ZebakAppTest {
             useLiquidAdrenaline = true
         )
         println("Zebak Lightbearer + No Surge Pots + Liquid Adrenaline: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -70,6 +78,8 @@ class ZebakAppTest {
             useLiquidAdrenaline = false
         )
         println("Zebak No Lightbearer + Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -82,6 +92,8 @@ class ZebakAppTest {
             useLiquidAdrenaline = false
         )
         println("Zebak No Lightbearer + No Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -94,6 +106,8 @@ class ZebakAppTest {
             useLiquidAdrenaline = true
         )
         println("Zebak No Lightbearer + Surge Pots + Liquid Adrenaline: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -106,13 +120,17 @@ class ZebakAppTest {
             useLiquidAdrenaline = true
         )
         println("Zebak No Lightbearer + No Surge Pots + Liquid Adrenaline: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
     private data class SimulationResults(
         val totalTicks: Int,
         val iterations: Int,
-        val averageTicks: Int
+        val averageTicks: Int,
+        val specCounts: Map<String, Int>,
+        val averageSpecsPerWeapon: Map<String, Double>
     )
     
     private fun simulateZebakFights(
@@ -122,9 +140,10 @@ class ZebakAppTest {
         useLiquidAdrenaline: Boolean
     ): SimulationResults {
         var totalTicks = 0
+        val specTracker = SpecTracker()
         
         repeat(iterations) { iteration ->
-            val player = createPlayer(hasLightbearer, useSurgePots, useLiquidAdrenaline)
+            val player = createPlayer(hasLightbearer, useSurgePots, useLiquidAdrenaline, specTracker)
             val zebakBoss = createZebakBoss()
             val loadout = createLoadout(player, zebakBoss)
             val monster = Zebak(loadout, zebakBoss)
@@ -137,11 +156,13 @@ class ZebakAppTest {
         return SimulationResults(
             totalTicks = totalTicks,
             iterations = iterations,
-            averageTicks = totalTicks / iterations
+            averageTicks = totalTicks / iterations,
+            specCounts = specTracker.getAllSpecCounts(),
+            averageSpecsPerWeapon = specTracker.getAverageSpecsPerWeapon(iterations)
         )
     }
     
-    private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, useLiquidAdrenaline: Boolean): Player {
+    private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, useLiquidAdrenaline: Boolean, specTracker: SpecTracker): Player {
         return Player(
             GenericCombatEntity(
                 health = Health(99),
@@ -149,7 +170,8 @@ class ZebakAppTest {
                 hasLightbearer = hasLightbearer
             ),
             useSurgePots = useSurgePots,
-            useLiquidAdrenaline = useLiquidAdrenaline
+            useLiquidAdrenaline = useLiquidAdrenaline,
+            specTracker = specTracker
         )
     }
     

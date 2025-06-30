@@ -62,14 +62,30 @@ private fun runAkkhaSimulations(iterations: Int) {
     val magusNoSurgeWithAdrenaline = simulateAkkhaFights(iterations, false, false, true)
     
     println("Lightbearer + Surge Pots: ${lightbearerWithSurge.averageTicks} ticks")
+    println("  Spec usage: ${lightbearerWithSurge.specCounts}")
+    println("  Average specs per weapon: ${lightbearerWithSurge.averageSpecsPerWeapon}")
     println("Lightbearer + No Surge Pots: ${lightbearerNoSurge.averageTicks} ticks")
+    println("  Spec usage: ${lightbearerNoSurge.specCounts}")
+    println("  Average specs per weapon: ${lightbearerNoSurge.averageSpecsPerWeapon}")
     println("Lightbearer + Surge Pots + Liquid Adrenaline: ${lightbearerWithAdrenaline.averageTicks} ticks")
+    println("  Spec usage: ${lightbearerWithAdrenaline.specCounts}")
+    println("  Average specs per weapon: ${lightbearerWithAdrenaline.averageSpecsPerWeapon}")
     println("Lightbearer + No Surge Pots + Liquid Adrenaline: ${lightbearerNoSurgeWithAdrenaline.averageTicks} ticks")
+    println("  Spec usage: ${lightbearerNoSurgeWithAdrenaline.specCounts}")
+    println("  Average specs per weapon: ${lightbearerNoSurgeWithAdrenaline.averageSpecsPerWeapon}")
     println()
     println("Magus Ring + Surge Pots: ${magusWithSurge.averageTicks} ticks")
+    println("  Spec usage: ${magusWithSurge.specCounts}")
+    println("  Average specs per weapon: ${magusWithSurge.averageSpecsPerWeapon}")
     println("Magus Ring + No Surge Pots: ${magusNoSurge.averageTicks} ticks")
+    println("  Spec usage: ${magusNoSurge.specCounts}")
+    println("  Average specs per weapon: ${magusNoSurge.averageSpecsPerWeapon}")
     println("Magus Ring + Surge Pots + Liquid Adrenaline: ${magusWithAdrenaline.averageTicks} ticks")
+    println("  Spec usage: ${magusWithAdrenaline.specCounts}")
+    println("  Average specs per weapon: ${magusWithAdrenaline.averageSpecsPerWeapon}")
     println("Magus Ring + No Surge Pots + Liquid Adrenaline: ${magusNoSurgeWithAdrenaline.averageTicks} ticks")
+    println("  Spec usage: ${magusNoSurgeWithAdrenaline.specCounts}")
+    println("  Average specs per weapon: ${magusNoSurgeWithAdrenaline.averageSpecsPerWeapon}")
 }
 
 private fun runZebakSimulations(iterations: Int) {
@@ -88,14 +104,30 @@ private fun runZebakSimulations(iterations: Int) {
     val noLightbearerNoSurgeWithAdrenaline = simulateZebakFights(iterations, false, false, true)
     
     println("Lightbearer + Surge Pots: ${lightbearerWithSurge.averageTicks} ticks")
+    println("  Spec usage: ${lightbearerWithSurge.specCounts}")
+    println("  Average specs per weapon: ${lightbearerWithSurge.averageSpecsPerWeapon}")
     println("Lightbearer + No Surge Pots: ${lightbearerNoSurge.averageTicks} ticks")
+    println("  Spec usage: ${lightbearerNoSurge.specCounts}")
+    println("  Average specs per weapon: ${lightbearerNoSurge.averageSpecsPerWeapon}")
     println("Lightbearer + Surge Pots + Liquid Adrenaline: ${lightbearerWithAdrenaline.averageTicks} ticks")
+    println("  Spec usage: ${lightbearerWithAdrenaline.specCounts}")
+    println("  Average specs per weapon: ${lightbearerWithAdrenaline.averageSpecsPerWeapon}")
     println("Lightbearer + No Surge Pots + Liquid Adrenaline: ${lightbearerNoSurgeWithAdrenaline.averageTicks} ticks")
+    println("  Spec usage: ${lightbearerNoSurgeWithAdrenaline.specCounts}")
+    println("  Average specs per weapon: ${lightbearerNoSurgeWithAdrenaline.averageSpecsPerWeapon}")
     println()
     println("No Lightbearer + Surge Pots: ${noLightbearerWithSurge.averageTicks} ticks")
+    println("  Spec usage: ${noLightbearerWithSurge.specCounts}")
+    println("  Average specs per weapon: ${noLightbearerWithSurge.averageSpecsPerWeapon}")
     println("No Lightbearer + No Surge Pots: ${noLightbearerNoSurge.averageTicks} ticks")
+    println("  Spec usage: ${noLightbearerNoSurge.specCounts}")
+    println("  Average specs per weapon: ${noLightbearerNoSurge.averageSpecsPerWeapon}")
     println("No Lightbearer + Surge Pots + Liquid Adrenaline: ${noLightbearerWithAdrenaline.averageTicks} ticks")
+    println("  Spec usage: ${noLightbearerWithAdrenaline.specCounts}")
+    println("  Average specs per weapon: ${noLightbearerWithAdrenaline.averageSpecsPerWeapon}")
     println("No Lightbearer + No Surge Pots + Liquid Adrenaline: ${noLightbearerNoSurgeWithAdrenaline.averageTicks} ticks")
+    println("  Spec usage: ${noLightbearerNoSurgeWithAdrenaline.specCounts}")
+    println("  Average specs per weapon: ${noLightbearerNoSurgeWithAdrenaline.averageSpecsPerWeapon}")
 }
 
 private fun runBabaSimulations(iterations: Int) {
@@ -110,15 +142,25 @@ private fun runBabaSimulations(iterations: Int) {
     val ultorNoSurge = simulateBabaFights(iterations, false, false)
     
     println("Lightbearer + Surge Pots: ${lightbearerWithSurge.averageTicks} ticks")
+    println("  Spec usage: ${lightbearerWithSurge.specCounts}")
+    println("  Average specs per weapon: ${lightbearerWithSurge.averageSpecsPerWeapon}")
     println("Lightbearer + No Surge Pots: ${lightbearerNoSurge.averageTicks} ticks")
+    println("  Spec usage: ${lightbearerNoSurge.specCounts}")
+    println("  Average specs per weapon: ${lightbearerNoSurge.averageSpecsPerWeapon}")
     println("Ultor + Surge Pots: ${ultorWithSurge.averageTicks} ticks")
+    println("  Spec usage: ${ultorWithSurge.specCounts}")
+    println("  Average specs per weapon: ${ultorWithSurge.averageSpecsPerWeapon}")
     println("Ultor + No Surge Pots: ${ultorNoSurge.averageTicks} ticks")
+    println("  Spec usage: ${ultorNoSurge.specCounts}")
+    println("  Average specs per weapon: ${ultorNoSurge.averageSpecsPerWeapon}")
 }
 
 private data class SimulationResults(
     val totalTicks: Int,
     val iterations: Int,
-    val averageTicks: Int
+    val averageTicks: Int,
+    val specCounts: Map<String, Int>,
+    val averageSpecsPerWeapon: Map<String, Double>
 )
 
 private fun simulateZebakFights(
@@ -128,9 +170,10 @@ private fun simulateZebakFights(
     useLiquidAdrenaline: Boolean
 ): SimulationResults {
     var totalTicks = 0
+    val specTracker = SpecTracker()
     
     repeat(iterations) { iteration ->
-        val player = createPlayer(hasLightbearer, useSurgePots, useLiquidAdrenaline)
+        val player = createPlayer(hasLightbearer, useSurgePots, useLiquidAdrenaline, specTracker)
         val zebakBoss = createZebakBoss()
         val loadout = createLoadout(player, zebakBoss)
         val monster = Zebak(loadout, zebakBoss)
@@ -143,7 +186,9 @@ private fun simulateZebakFights(
     return SimulationResults(
         totalTicks = totalTicks,
         iterations = iterations,
-        averageTicks = totalTicks / iterations
+        averageTicks = totalTicks / iterations,
+        specCounts = specTracker.getAllSpecCounts(),
+        averageSpecsPerWeapon = specTracker.getAverageSpecsPerWeapon(iterations)
     )
 }
 
@@ -153,9 +198,10 @@ private fun simulateBabaFights(
     useSurgePots: Boolean
 ): SimulationResults {
     var totalTicks = 0
+    val specTracker = SpecTracker()
     
     repeat(iterations) { iteration ->
-        val player = createPlayer(hasLightbearer, useSurgePots, false) // Baba doesn't use liquid adrenaline
+        val player = createPlayer(hasLightbearer, useSurgePots, false, specTracker) // Baba doesn't use liquid adrenaline
         val babaBoss = createBabaBoss()
         val loadout = createBabaLoadout(player, babaBoss)
         val monster = Baba(loadout, babaBoss)
@@ -168,7 +214,9 @@ private fun simulateBabaFights(
     return SimulationResults(
         totalTicks = totalTicks,
         iterations = iterations,
-        averageTicks = totalTicks / iterations
+        averageTicks = totalTicks / iterations,
+        specCounts = specTracker.getAllSpecCounts(),
+        averageSpecsPerWeapon = specTracker.getAverageSpecsPerWeapon(iterations)
     )
 }
 
@@ -179,9 +227,10 @@ private fun simulateAkkhaFights(
     useLiquidAdrenaline: Boolean
 ): SimulationResults {
     var totalTicks = 0
+    val specTracker = SpecTracker()
     
     repeat(iterations) { iteration ->
-        val player = createPlayer(hasLightbearer, useSurgePots, useLiquidAdrenaline)
+        val player = createPlayer(hasLightbearer, useSurgePots, useLiquidAdrenaline, specTracker)
         val loadout = createAkkhaLoadout(player)
         val monster = Akkha(loadout, invocationLevel = 500, pathLevel = 2)
         val simulator = CombatSimulator(player, monster)
@@ -193,11 +242,13 @@ private fun simulateAkkhaFights(
     return SimulationResults(
         totalTicks = totalTicks,
         iterations = iterations,
-        averageTicks = totalTicks / iterations
+        averageTicks = totalTicks / iterations,
+        specCounts = specTracker.getAllSpecCounts(),
+        averageSpecsPerWeapon = specTracker.getAverageSpecsPerWeapon(iterations)
     )
 }
 
-private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, useLiquidAdrenaline: Boolean): Player {
+private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, useLiquidAdrenaline: Boolean, specTracker: SpecTracker): Player {
     return Player(
         GenericCombatEntity(
             health = Health(99),
@@ -205,7 +256,8 @@ private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, useLiqu
             hasLightbearer = hasLightbearer
         ),
         useSurgePots = useSurgePots,
-        useLiquidAdrenaline = useLiquidAdrenaline
+        useLiquidAdrenaline = useLiquidAdrenaline,
+        specTracker = specTracker
     )
 }
 

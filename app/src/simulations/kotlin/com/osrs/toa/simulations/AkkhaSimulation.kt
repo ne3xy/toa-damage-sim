@@ -22,6 +22,8 @@ class AkkhaAppTest {
             useLiquidAdrenaline = false
         )
         println("Akkha Lightbearer + Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -34,6 +36,8 @@ class AkkhaAppTest {
             useLiquidAdrenaline = false
         )
         println("Akkha Lightbearer + No Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -46,6 +50,8 @@ class AkkhaAppTest {
             useLiquidAdrenaline = true
         )
         println("Akkha Lightbearer + Surge Pots + Liquid Adrenaline: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -58,6 +64,8 @@ class AkkhaAppTest {
             useLiquidAdrenaline = true
         )
         println("Akkha Lightbearer + No Surge Pots + Liquid Adrenaline: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -70,6 +78,8 @@ class AkkhaAppTest {
             useLiquidAdrenaline = false
         )
         println("Akkha Magus Ring + Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -82,6 +92,8 @@ class AkkhaAppTest {
             useLiquidAdrenaline = false
         )
         println("Akkha Magus Ring + No Surge Pots: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -94,6 +106,8 @@ class AkkhaAppTest {
             useLiquidAdrenaline = true
         )
         println("Akkha Magus Ring + Surge Pots + Liquid Adrenaline: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
@@ -106,13 +120,17 @@ class AkkhaAppTest {
             useLiquidAdrenaline = true
         )
         println("Akkha Magus Ring + No Surge Pots + Liquid Adrenaline: ${results.averageTicks} ticks")
+        println("Spec usage: ${results.specCounts}")
+        println("Average specs per weapon: ${results.averageSpecsPerWeapon}")
         assertTrue(results.averageTicks > 0)
     }
     
     private data class SimulationResults(
         val totalTicks: Int,
         val iterations: Int,
-        val averageTicks: Int
+        val averageTicks: Int,
+        val specCounts: Map<String, Int>,
+        val averageSpecsPerWeapon: Map<String, Double>
     )
     
     private fun simulateAkkhaFights(
@@ -122,9 +140,10 @@ class AkkhaAppTest {
         useLiquidAdrenaline: Boolean
     ): SimulationResults {
         var totalTicks = 0
+        val specTracker = SpecTracker()
         
         repeat(iterations) { iteration ->
-            val player = createPlayer(hasLightbearer, useSurgePots, useLiquidAdrenaline)
+            val player = createPlayer(hasLightbearer, useSurgePots, useLiquidAdrenaline, specTracker)
             val loadout = createAkkhaLoadout(player)
             val monster = Akkha(loadout, invocationLevel = 500, pathLevel = 2)
             val simulator = CombatSimulator(player, monster)
@@ -136,11 +155,13 @@ class AkkhaAppTest {
         return SimulationResults(
             totalTicks = totalTicks,
             iterations = iterations,
-            averageTicks = totalTicks / iterations
+            averageTicks = totalTicks / iterations,
+            specCounts = specTracker.getAllSpecCounts(),
+            averageSpecsPerWeapon = specTracker.getAverageSpecsPerWeapon(iterations)
         )
     }
     
-    private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, useLiquidAdrenaline: Boolean): Player {
+    private fun createPlayer(hasLightbearer: Boolean, useSurgePots: Boolean, useLiquidAdrenaline: Boolean, specTracker: SpecTracker): Player {
         return Player(
             GenericCombatEntity(
                 health = Health(99),
@@ -148,7 +169,8 @@ class AkkhaAppTest {
                 hasLightbearer = hasLightbearer
             ),
             useSurgePots = useSurgePots,
-            useLiquidAdrenaline = useLiquidAdrenaline
+            useLiquidAdrenaline = useLiquidAdrenaline,
+            specTracker = specTracker
         )
     }
     

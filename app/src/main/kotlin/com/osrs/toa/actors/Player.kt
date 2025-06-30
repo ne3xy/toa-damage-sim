@@ -1,13 +1,15 @@
 package com.osrs.toa.actors
 
 import com.osrs.toa.Tick
+import com.osrs.toa.SpecTracker
 import com.osrs.toa.weapons.Weapon
 import com.osrs.toa.weapons.SpecWeapon
 
 class Player(
     combatEntity: GenericCombatEntity,
     private val useSurgePots: Boolean = true,
-    private val useLiquidAdrenaline: Boolean = true
+    private val useLiquidAdrenaline: Boolean = true,
+    private val specTracker: SpecTracker? = null
 ) : CombatEntity by combatEntity {
     
     private var lastSurgePotTick: Tick? = null
@@ -24,6 +26,10 @@ class Player(
                 val damage = specWeapon.attack(target)
                 target.takeDamage(damage)
                 specialAttackEnergy.consume(getSpecCost(specWeapon.specialAttackCost, currentTick))
+                
+                // Record the special attack usage
+                specTracker?.recordSpec(specWeapon)
+                
                 println("dealt $damage damage to ${target.name} with ${specWeapon.name} on tick ${currentTick.value}. it has ${target.health.value} health")
             } else {
                 setLastAttackTick(currentTick, normalWeapon.attackSpeed)
