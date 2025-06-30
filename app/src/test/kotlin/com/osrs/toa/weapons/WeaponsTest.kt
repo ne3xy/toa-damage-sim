@@ -181,6 +181,27 @@ class WeaponsTest {
         assertEquals(0, (target.combatStats as DefaultCombatStats).defenceLevel)
     }
 
+    @Test
+    fun `test Fang damage calculation for LB+SCB (trueMax 57)`() {
+        val (minDamage, maxDamage) = Weapons.calculateFangDamageRange(57)
+        assertEquals(8, minDamage) // 15% of 57 = 8.55, floor = 8
+        assertEquals(49, maxDamage) // 85% of 57 = 48.45, ceil = 49
+    }
+    
+    @Test
+    fun `test Fang damage calculation for LB+Salted and Ultor+SCB (trueMax 59)`() {
+        val (minDamage, maxDamage) = Weapons.calculateFangDamageRange(59)
+        assertEquals(8, minDamage) // 15% of 59 = 8.85, floor = 8
+        assertEquals(51, maxDamage) // 85% of 59 = 50.15, ceil = 51
+    }
+    
+    @Test
+    fun `test Fang damage calculation for Ultor+Salted (trueMax 63)`() {
+        val (minDamage, maxDamage) = Weapons.calculateFangDamageRange(63)
+        assertEquals(9, minDamage) // 15% of 63 = 9.45, floor = 9
+        assertEquals(54, maxDamage) // 85% of 63 = 53.55, ceil = 54
+    }
+
     private fun createTestTarget(): GenericCombatEntity {
         return GenericCombatEntity(
             name = "Test Target",
