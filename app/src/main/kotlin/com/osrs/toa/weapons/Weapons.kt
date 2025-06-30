@@ -8,6 +8,7 @@ import kotlin.random.Random
 
 // Predefined weapons
 object Weapons {
+
     val TumekensShadow: Weapon = object: Weapon {
         override val name = "Tumeken's Shadow"
         override val attackSpeed = 5
@@ -32,17 +33,62 @@ object Weapons {
         }
     }
 
-    val ZaryteCrossbow: SpecWeapon = object: SpecWeapon {
-        override val specialAttackCost = 75
-        override val name = "Zaryte Crossbow"
-        override val attackSpeed = 5
-        override fun attack(target: CombatEntity): Int {
-            val accuracy = .7864
+    //salted, takeoffs
+    val ZaryteCrossbow: SpecWeapon = object: SpecWeapon, Weapon by BaseWeapon(
+        name = "Zaryte Crossbow",
+        attackSpeed = 5,
+        attackStyle = AttackStyle.RANGED_HEAVY,
+        attackRoll = 48190,
+        hitDamage = { target ->
             val damage = min(110, (target.health.value * .22).toInt())
-            val hitSuccesful = Random.nextDouble() <= accuracy
-            return if (hitSuccesful) damage else 0
+            damage
         }
+    ) {
+        override val specialAttackCost = 75
     }
+
+    
+    fun calculateFangDamageRange(trueMax: Int): Pair<Int, Int> {
+        // Fang deals between 15% and 85% of max hit when it hits
+        val minDamage = kotlin.math.floor(trueMax * 0.15).toInt()
+        val maxDamage = kotlin.math.ceil(trueMax * 0.85).toInt()
+        return Pair(minDamage, maxDamage)
+    }
+
+    fun calculateFangDamage(trueMax: Int): Int {
+        val (minDamage, maxDamage) = calculateFangDamageRange(trueMax)
+        return Random.nextInt(minDamage, maxDamage)
+    }
+
+    //SCB
+    val UltorFang: Weapon = BaseWeapon(
+        name = "Osmumten's Fang (Ultor+SCB)",
+        attackSpeed = 5,
+        attackStyle = AttackStyle.MELEE_STAB,
+        attackRoll = 36654,
+        hitDamage = { target ->
+            val trueMax = 59
+            calculateFangDamage(trueMax)
+        },
+        hitRollProvider = { hitChance ->
+            AccuracyCalculator.doesAttackHit(hitChance) || AccuracyCalculator.doesAttackHit(hitChance)
+        }
+    )
+
+    //LB+SCB
+    val LightbearerFang: Weapon = BaseWeapon(
+        name = "Osmumten's Fang (LB+SCB)",
+        attackSpeed = 5,
+        attackStyle = AttackStyle.MELEE_STAB,
+        attackRoll = 36654,
+        hitDamage = { target ->
+            val trueMax = 57
+            calculateFangDamage(trueMax)
+        },
+        hitRollProvider = { hitChance ->
+            AccuracyCalculator.doesAttackHit(hitChance) || AccuracyCalculator.doesAttackHit(hitChance)
+        }
+    )
 
     val Zebak6WayTwistedBow: Weapon = NormalDamageBaseWeapon(
         name = "Twisted Bow",
@@ -78,4 +124,17 @@ object Weapons {
     }
     val BandosGodsword = BaseBandosGodsword(BandosGodswordBaseWeapon)
     val LightbearerBandosGodsword = BaseBandosGodsword(LightbearerBandosGodswordBaseWeapon)
+
+    val Voidwaker: SpecWeapon = object: SpecWeapon {
+        override val specialAttackCost = 50
+        override val name = "Voidwaker"
+        override val attackSpeed = 5
+        override fun attack(target: CombatEntity): Int {
+            val accuracy = .85
+            val maxHit = 50
+            val hitSuccesful = Random.nextDouble() <= accuracy
+            val damageRoll = Random.nextInt(1, maxHit + 1)
+            return if (hitSuccesful) max(1, damageRoll - 1) else 0
+        }
+    }
 }

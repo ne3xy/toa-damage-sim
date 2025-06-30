@@ -8,32 +8,79 @@ import com.osrs.toa.actors.Player
 import com.osrs.toa.actors.ToaCombatEntity
 import com.osrs.toa.actors.DefaultCombatStats
 import com.osrs.toa.actors.DefenceDrainCappedCombatStats
+import com.osrs.toa.actors.ToaMonsterCombatStats
+import com.osrs.toa.Health
 import com.osrs.toa.sims.Zebak
 import com.osrs.toa.sims.ZebakBoss
 import com.osrs.toa.sims.ZebakMainFightStrategy
 import com.osrs.toa.sims.ZebakConstants
+import com.osrs.toa.sims.Baba
+import com.osrs.toa.sims.BabaBoss
+import com.osrs.toa.sims.BabaMainFightStrategy
+import com.osrs.toa.sims.BabaConstants
 import com.osrs.toa.weapons.Weapons
+import com.osrs.toa.sims.Akkha
+import com.osrs.toa.sims.AkkhaBoss
+import com.osrs.toa.sims.AkkhaMainFightStrategy
+import com.osrs.toa.sims.AkkhaConstants
 
 fun main() {
-    val iterations = 1000
+    val iterations = 1
     
-    // Simulate with Lightbearer
-    val lightbearerResults = simulateZebakFights(
-        iterations = iterations,
-        hasLightbearer = true,
-        description = "with lightbearer"
-    )
+   // Simulate Zebak with Lightbearer
+   val zebakLightbearerResults = simulateZebakFights(
+       iterations = iterations,
+       hasLightbearer = true,
+       description = "with lightbearer"
+   )
+
+   // Simulate Zebak without Lightbearer
+   val zebakNoLightbearerResults = simulateZebakFights(
+       iterations = iterations,
+       hasLightbearer = false,
+       description = "without lightbearer"
+   )
+
+   // Simulate Baba with Lightbearer
+   val babaLightbearerResults = simulateBabaFights(
+       iterations = iterations,
+       hasLightbearer = true,
+       description = "with lightbearer"
+   )
     
-    // Simulate without Lightbearer
-    val noLightbearerResults = simulateZebakFights(
+    // Simulate Baba with Ultor
+    val babaUltorResults = simulateBabaFights(
         iterations = iterations,
         hasLightbearer = false,
-        description = "without lightbearer"
+        description = "with ultor"
     )
     
-    // Print results
-    println("Average fight length vs zebak with lightbearer over $iterations iterations: ${lightbearerResults.averageTicks}")
-    println("Average fight length vs zebak without lightbearer over $iterations iterations: ${noLightbearerResults.averageTicks}")
+   // Simulate Akkha with Lightbearer
+   val akkhaLightbearerResults = simulateAkkhaFights(
+       iterations = iterations,
+       hasLightbearer = true,
+       description = "with lightbearer"
+   )
+
+   // Simulate Akkha with Magus Ring
+   val akkhaMagusResults = simulateAkkhaFights(
+       iterations = iterations,
+       hasLightbearer = false,
+       description = "with magus ring"
+   )
+    
+   // Print results
+   println("=== ZEBAK RESULTS ===")
+   println("Average fight length vs zebak with lightbearer over $iterations iterations: ${zebakLightbearerResults.averageTicks}")
+   println("Average fight length vs zebak without lightbearer over $iterations iterations: ${zebakNoLightbearerResults.averageTicks}")
+    
+    println("\n=== BABA RESULTS ===")
+   println("Average fight length vs baba with lightbearer over $iterations iterations: ${babaLightbearerResults.averageTicks}")
+    println("Average fight length vs baba with ultor over $iterations iterations: ${babaUltorResults.averageTicks}")
+    
+   println("\n=== AKKHA RESULTS ===")
+   println("Average fight length vs akkha with lightbearer over $iterations iterations: ${akkhaLightbearerResults.averageTicks}")
+   println("Average fight length vs akkha with magus ring over $iterations iterations: ${akkhaMagusResults.averageTicks}")
 }
 
 private data class SimulationResults(
@@ -73,6 +120,67 @@ private fun simulateZebakFights(
     )
 }
 
+private fun simulateBabaFights(
+    iterations: Int,
+    hasLightbearer: Boolean,
+    description: String
+): SimulationResults {
+    var totalTicks = 0
+    
+    repeat(iterations) { iteration ->
+        val player = createPlayer(hasLightbearer)
+        val babaBoss = createBabaBoss()
+        val loadout = createBabaLoadout(player, babaBoss)
+        val monster = Baba(loadout, babaBoss)
+        val simulator = CombatSimulator(player, monster)
+        
+        val fightLength = simulator.runSimulation()
+        totalTicks += fightLength.value
+        
+        // Print final status for first few iterations
+        if (iteration < 3) {
+            println("\nFinal Status:")
+            println("fight lasted ${fightLength.value} ticks")
+        }
+    }
+    
+    return SimulationResults(
+        totalTicks = totalTicks,
+        iterations = iterations,
+        averageTicks = totalTicks / iterations
+    )
+}
+
+private fun simulateAkkhaFights(
+    iterations: Int,
+    hasLightbearer: Boolean,
+    description: String
+): SimulationResults {
+    var totalTicks = 0
+    
+    repeat(iterations) { iteration ->
+        val player = createPlayer(hasLightbearer)
+        val loadout = createAkkhaLoadout(player)
+        val monster = Akkha(loadout, invocationLevel = 500, pathLevel = 2)
+        val simulator = CombatSimulator(player, monster)
+        
+        val fightLength = simulator.runSimulation()
+        totalTicks += fightLength.value
+        
+        // Print final status for first few iterations
+        if (iteration < 3) {
+            println("\nFinal Status:")
+            println("fight lasted ${fightLength.value} ticks")
+        }
+    }
+    
+    return SimulationResults(
+        totalTicks = totalTicks,
+        iterations = iterations,
+        averageTicks = totalTicks / iterations
+    )
+}
+
 private fun createPlayer(hasLightbearer: Boolean): Player {
     return Player(
         GenericCombatEntity(
@@ -88,7 +196,7 @@ private fun createZebakBoss(): ZebakBoss {
         name = "Zebak",
         baseHp = ZebakConstants.BASE_HP,
         invocationLevel = 500,
-        pathLevel = 2,
+        pathLevel = 3,
         baseCombatStats = DefenceDrainCappedCombatStats(DefaultCombatStats(
             defenceLevel = 70,
             magicLevel = 100,
@@ -104,5 +212,55 @@ private fun createLoadout(player: Player, zebakBoss: ZebakBoss): PlayerLoadout {
         override val player = player
         override val mainWeapon = Weapons.Zebak6WayTwistedBow
         override val strategy = ZebakMainFightStrategy(zebakBoss)
+    }
+}
+
+private fun createBabaBoss(): BabaBoss {
+    return BabaBoss(ToaCombatEntity(
+        name = "Baba",
+        baseHp = BabaConstants.BASE_HP,
+        invocationLevel = 500,
+        pathLevel = 0,
+        baseCombatStats = DefenceDrainCappedCombatStats(DefaultCombatStats(
+            defenceLevel = 70,
+            magicLevel = 100,
+            meleeSlashDefenceBonus = 160,
+            rangedDefenceBonus = 110,
+            magicDefenceBonus = 200
+        ), drainCap = 20)
+    ))
+}
+
+private fun createBabaLoadout(player: Player, babaBoss: BabaBoss,): PlayerLoadout {
+    val weapon = if (player.hasLightbearer) Weapons.LightbearerFang else Weapons.UltorFang
+    
+    return object : PlayerLoadout {
+        override val player = player
+        override val mainWeapon = weapon
+        override val strategy = BabaMainFightStrategy(babaBoss)
+    }
+}
+
+private fun createAkkhaBoss(): AkkhaBoss {
+    return AkkhaBoss(ToaCombatEntity(
+        name = "Akkha",
+        baseHp = AkkhaConstants.BASE_HP,
+        invocationLevel = 500,
+        pathLevel = 2,
+        baseCombatStats = DefaultCombatStats(
+            defenceLevel = 80,
+            magicLevel = 100,
+            rangedDefenceBonus = 60,
+            rangedHeavyDefenceBonus = 60,
+            magicDefenceBonus = 10
+        )
+    ), pathLevel = 2, invocationLevel = 500)
+}
+
+private fun createAkkhaLoadout(player: Player): PlayerLoadout {
+    return object : PlayerLoadout {
+        override val player = player
+        override val mainWeapon = if (player.hasLightbearer) Weapons.TumekensShadow else Weapons.MagussShadow
+        override val strategy = AkkhaMainFightStrategy(createAkkhaBoss())
     }
 }
