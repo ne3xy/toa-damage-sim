@@ -9,13 +9,14 @@ import com.osrs.toa.sims.AkkhaMainFightStrategy
 import com.osrs.toa.weapons.Weapons
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import com.osrs.toa.simulations.DEFAULT_ITERATIONS
 
 class AkkhaAppTest {
     
     @Test
     fun `test Akkha with Lightbearer and surge pots`() {
         val results = simulateAkkhaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = true,
             useSurgePots = true,
             useLiquidAdrenaline = false
@@ -27,7 +28,7 @@ class AkkhaAppTest {
     @Test
     fun `test Akkha with Lightbearer, no surge pots`() {
         val results = simulateAkkhaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = true,
             useSurgePots = false,
             useLiquidAdrenaline = false
@@ -39,7 +40,7 @@ class AkkhaAppTest {
     @Test
     fun `test Akkha with Lightbearer, surge pots, and liquid adrenaline`() {
         val results = simulateAkkhaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = true,
             useSurgePots = true,
             useLiquidAdrenaline = true
@@ -51,7 +52,7 @@ class AkkhaAppTest {
     @Test
     fun `test Akkha with Lightbearer, no surge pots, but with liquid adrenaline`() {
         val results = simulateAkkhaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = true,
             useSurgePots = false,
             useLiquidAdrenaline = true
@@ -63,7 +64,7 @@ class AkkhaAppTest {
     @Test
     fun `test Akkha with Magus Ring and surge pots`() {
         val results = simulateAkkhaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = false,
             useSurgePots = true,
             useLiquidAdrenaline = false
@@ -75,7 +76,7 @@ class AkkhaAppTest {
     @Test
     fun `test Akkha with Magus Ring, no surge pots`() {
         val results = simulateAkkhaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = false,
             useSurgePots = false,
             useLiquidAdrenaline = false
@@ -87,7 +88,7 @@ class AkkhaAppTest {
     @Test
     fun `test Akkha with Magus Ring, surge pots, and liquid adrenaline`() {
         val results = simulateAkkhaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = false,
             useSurgePots = true,
             useLiquidAdrenaline = true
@@ -99,7 +100,7 @@ class AkkhaAppTest {
     @Test
     fun `test Akkha with Magus Ring, no surge pots, but with liquid adrenaline`() {
         val results = simulateAkkhaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = false,
             useSurgePots = false,
             useLiquidAdrenaline = true

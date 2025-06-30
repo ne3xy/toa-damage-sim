@@ -9,13 +9,14 @@ import com.osrs.toa.sims.BabaMainFightStrategy
 import com.osrs.toa.weapons.Weapons
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import com.osrs.toa.simulations.DEFAULT_ITERATIONS
 
 class BabaAppTest {
     
     @Test
     fun `test Baba with Lightbearer and surge pots`() {
         val results = simulateBabaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = true,
             useSurgePots = true
         )
@@ -26,7 +27,7 @@ class BabaAppTest {
     @Test
     fun `test Baba with Lightbearer, no surge pots`() {
         val results = simulateBabaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = true,
             useSurgePots = false
         )
@@ -37,7 +38,7 @@ class BabaAppTest {
     @Test
     fun `test Baba with Ultor and surge pots`() {
         val results = simulateBabaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = false,
             useSurgePots = true
         )
@@ -48,7 +49,7 @@ class BabaAppTest {
     @Test
     fun `test Baba with Ultor, no surge pots`() {
         val results = simulateBabaFights(
-            iterations = 1000,
+            iterations = DEFAULT_ITERATIONS,
             hasLightbearer = false,
             useSurgePots = false
         )
